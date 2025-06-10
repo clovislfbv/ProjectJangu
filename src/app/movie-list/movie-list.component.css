@@ -1,0 +1,10 @@
+.row {
+    display: flex;
+    flex-direction: row;
+    padding-bottom: 2%;
+}
+
+app-movie {
+    width : 25%;
+    height: 90%;
+}
