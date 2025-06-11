@@ -1,0 +1,23 @@
+app-movie-list {
+    width: 99%;
+}
+
+.body {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 70%;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 30%;
+}
+
+#searchbar {
+    height: 15%;
+    width: 50%;
+}

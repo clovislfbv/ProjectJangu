@@ -2,9 +2,17 @@
     display: flex;
     flex-direction: row;
     padding-bottom: 2%;
+    justify-content: space-around;
 }
 
 app-movie {
-    width : 25%;
+    width : 20%;
     height: 90%;
+}
+
+.movie-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #000;
+    border-radius: 10px;
 }
