@@ -1,6 +1,22 @@
 <div class="header">
     <h1>Movie browser</h1>
-    <input type="text" id="searchbar" placeholder="Search for a movie" />
+    <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form>
+                <div class="input-group mb-3">
+                    <select class="form-select" style="max-width: 150px;">
+                            <option selected>All Categories</option>
+                            <option value="1">Category 1</option>
+                            <option value="2">Category 2</option>
+                            <option value="3">Category 3</option>
+                        </select>
+                    <input type="text" class="form-control" placeholder="Search...">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <div class="body">
