@@ -1,11 +1,11 @@
 <div class="movie-list">
   <div class="movie-list-body">
-    <ng-container *ngFor="let j of [1,2,3,4]">
-    <div class="row">
-        <ng-container *ngFor="let i of [1,2,3,4]">
-            <app-movie></app-movie>
+    <ng-container *ngFor="let row of movies; let rowIndex = index">
+      <div class="row" *ngIf="rowIndex % 5 === 0">
+        <ng-container *ngFor="let movie of movies.slice(rowIndex, rowIndex + 5)">
+          <app-movie [title]="movie.title" [posterPath]="movie.poster_path"></app-movie>
         </ng-container>
-    </div>
+      </div>
     </ng-container>
   </div>
 </div>
