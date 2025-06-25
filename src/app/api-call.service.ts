@@ -4,43 +4,52 @@ import { Observable } from 'rxjs';
 import { api_key } from '../environments/environment';
 
 export interface Movie {
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: number[];
-  id: number;
-  original_language: string;
-  original_title: string;
-  overview: string;
-  popularity: number;
-  poster_path: string;
-  release_date: string;
-  title: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
+    adult: boolean;
+    backdrop_path: string;
+    genre_ids: number[];
+    id: number;
+    original_language: string;
+    original_title: string;
+    overview: string;
+    popularity: number;
+    poster_path: string;
+    release_date: string;
+    title: string;
+    video: boolean;
+    vote_average: number;
+    vote_count: number;
 }
 
 export interface DiscoverMovieResponse {
-  page: number;
-  results: Movie[];
-  total_pages: number;
-  total_results: number;
+    page: number;
+    results: Movie[];
+    total_pages: number;
+    total_results: number;
 }
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class ApiCallService {
+    private url =
+        'https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc';
+    private searchUrlBase =
+        'https://api.themoviedb.org/3/search/movie?include_adult=false&language=en-US&page=1&query=';
 
-  private url = 'https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc';
-  private headers = new HttpHeaders({
-    'accept': 'application/json',
-    'Authorization': `Bearer ${api_key}`
-  });
+    private headers = new HttpHeaders({
+        accept: 'application/json',
+        Authorization: `Bearer ${api_key}`,
+    });
 
-  constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
 
-  DiscoverMovies(): Observable<DiscoverMovieResponse> {
-    return this.http.get<DiscoverMovieResponse>(this.url, { headers: this.headers });
-  }
+    DiscoverMovies(): Observable<DiscoverMovieResponse> {
+        return this.http.get<DiscoverMovieResponse>(this.url, {
+            headers: this.headers,
+        });
+    }
+    SearchMovies(query: string): Observable<DiscoverMovieResponse> {
+        const url = this.searchUrlBase + encodeURIComponent(query);
+        return this.http.get<DiscoverMovieResponse>(url, { headers: this.headers });
+    }
 }

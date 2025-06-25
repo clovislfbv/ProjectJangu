@@ -1,20 +1,39 @@
 <div class="overlay-backdrop" (click)="close.emit()">
-  <div class="overlay-content" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="close.emit()">✕</button>
+    <div class="overlay-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="close.emit()">✕</button>
 
-    <div class="detail-container">
-      <!-- Left: Poster -->
-      <img
-        class="detail-poster"
-        [src]="'https://image.tmdb.org/t/p/original' + movie.poster_path"
-        [alt]="movie.title"
-      />
+        <div class="detail-container">
+            <!-- Left: Poster -->
+            <img
+                class="detail-poster"
+                [src]="
+                    movie.poster_path
+                        ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path
+                        : 'assets/placeholder-poster.png'
+                "
+                [alt]="movie.title || 'NA'"
+            />
 
-      <!-- Right: Info -->
-      <div class="detail-info">
-        <h2>{{ movie.title }}</h2>
-        <p>{{ movie.overview }}</p>
-      </div>
+            <!-- Right: Info -->
+            <div class="detail-info">
+                <h1 class="title">{{ movie.title || 'NA' }}</h1>
+                <div class="metadata">
+                    <span class="pill">
+                        {{ movie.release_date ? (movie.release_date | date: 'longDate') : 'NA' }}
+                    </span>
+                    <span class="pill">
+                        ⭐ {{ movie.vote_average != null ? movie.vote_average : 'NA' }}
+                    </span>
+                    <span class="pill">
+                        {{ movie.original_language ? (movie.original_language | uppercase) : 'NA' }}
+                    </span>
+                </div>
+
+                <h2 class="overview-label">Overview</h2>
+                <p class="overview">
+                    {{ movie.overview && movie.overview.trim() ? movie.overview : 'NA' }}
+                </p>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
