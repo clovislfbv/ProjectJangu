@@ -19,51 +19,51 @@ export class AppComponent {
     years: number[] = [];
     genres: Genre[] = [];
 
-  constructor(private api_call: ApiCallService) {}
+    constructor(private api_call: ApiCallService) {}
 
-  onSearch() {
-      this.movieList.search(this.searchText);
-  }
-
-  displayFilters() {
-    const filtersElement = document.getElementById("filters");
-    if (filtersElement) {
-      filtersElement.classList.remove("d-none");
+    onSearch() {
+        this.movieList.search(this.searchText);
     }
-  }
 
-  hideFilters() {
-    const filtersElement = document.getElementById("filters");
-    if (filtersElement) {
-      filtersElement.classList.add("d-none");
+    displayFilters() {
+        const filtersElement = document.getElementById('filters');
+        if (filtersElement) {
+            filtersElement.classList.remove('d-none');
+        }
     }
-  }
 
-  ngOnInit() {
-    this.hideFilters();
-    for (let year = this.currentYear; year >= 1900; year--) {
-      this.years.push(year);
+    hideFilters() {
+        const filtersElement = document.getElementById('filters');
+        if (filtersElement) {
+            filtersElement.classList.add('d-none');
+        }
     }
-    
-    this.api_call.getMovieGenres().subscribe((response) => {
-      this.genres = response.genres;
-    });
-  }
 
-  handleClick() {
-    if (this.isFirstClick) {
-      this.displayFilters();
-      const filtersElement = document.getElementById("btn_filters");
-      if (filtersElement) {
-        filtersElement.innerText = "Filters -";
-      }
-    } else {
-      this.hideFilters();
-      const filtersElement = document.getElementById("btn_filters");
-      if (filtersElement) {
-        filtersElement.innerText = "Filters +";
-      }
+    ngOnInit() {
+        this.hideFilters();
+        for (let year = this.currentYear; year >= 1900; year--) {
+            this.years.push(year);
+        }
+
+        this.api_call.getMovieGenres().subscribe((response) => {
+            this.genres = response.genres;
+        });
     }
-    this.isFirstClick = !this.isFirstClick;
-  }
+
+    handleClick() {
+        if (this.isFirstClick) {
+            this.displayFilters();
+            const filtersElement = document.getElementById('btn_filters');
+            if (filtersElement) {
+                filtersElement.innerText = 'Filters -';
+            }
+        } else {
+            this.hideFilters();
+            const filtersElement = document.getElementById('btn_filters');
+            if (filtersElement) {
+                filtersElement.innerText = 'Filters +';
+            }
+        }
+        this.isFirstClick = !this.isFirstClick;
+    }
 }

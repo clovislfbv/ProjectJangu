@@ -1,42 +1,61 @@
 <div class="header">
-    <h1>Movie browser</h1>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <form (ngSubmit)="onSearch()">
-                    <div class="input-group mb-3 search-bar">
-                        <select class="form-select custom-select" style="max-width: 150px;">
-                            <option value="movies" selected>Movies</option>
-                            <option value="actors">Actors</option>
-                        </select>
-                        <input type="text" class="form-control custom-input" placeholder="Search..." [(ngModel)]="searchText">
-                        <button class="btn btn-primary" type="submit">Search</button>
-                        <button class=" btn_filters filter-btn" type="button">
-                            <i class="bi bi-funnel"></i> Filters +
-                        </button>
-                    </div>
-                </form>
-            </div>
+  <h1>Movie browser</h1>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="input-group mb-3 search-bar">
+          <select class="form-select custom-select" style="max-width: 150px;">
+            <option value="movies" selected>Movies</option>
+            <option value="actors">Actors</option>
+          </select>
+          <input
+            type="text"
+            class="form-control custom-input"
+            placeholder="Search..."
+            [(ngModel)]="searchText"
+            name="searchText"
+            (keyup.enter)="onSearch()"
+          />
+          <button
+            class="btn btn-primary"
+            type="button"
+            (click)="onSearch()"
+          >
+            Search
+          </button>
+          <button class="btn_filters filter-btn" type="button">
+            <i class="bi bi-funnel"></i> Filters +
+          </button>
         </div>
-
-        <div class="row justify-content-center" id="filters">
-            <div class="col-md-6 all_filters">
-                <select id="genre" class="form-select me-2 custom-select">
-                    <option value="">All genres</option>
-                    <option *ngFor="let genre of genres" [value]="genre.id">{{ genre.name }}</option>
-                </select>
-                <select id="yearSelect" class="form-select me-2 custom-select">
-                    <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-                </select>
-                <select name="alphabetic" id="alphabeticSelect" class="form-select custom-select">
-                    <option value="">Alphabetical order</option>
-                    <option value="">Reverse alphabetical order</option>
-                </select>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="row justify-content-center" id="filters">
+      <div class="col-md-6 all_filters">
+        <select id="genre" class="form-select me-2 custom-select">
+          <option value="">All genres</option>
+          <option *ngFor="let genre of genres" [value]="genre.id">
+            {{ genre.name }}
+          </option>
+        </select>
+        <select id="yearSelect" class="form-select me-2 custom-select">
+          <option *ngFor="let year of years" [value]="year">
+            {{ year }}
+          </option>
+        </select>
+        <select
+          name="alphabetic"
+          id="alphabeticSelect"
+          class="form-select custom-select"
+        >
+          <option value="">Alphabetical order</option>
+          <option value="">Reverse alphabetical order</option>
+        </select>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="body">
-    <app-movie-list></app-movie-list>
+  <app-movie-list></app-movie-list>
 </div>
