@@ -1,17 +1,18 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MovieListComponent } from './movie-list/movie-list.component';
 import { ApiCallService, Genre } from './api-call.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-root',
     standalone: true,
-    imports: [RouterOutlet, FormsModule, MovieListComponent],
+    imports: [RouterOutlet, FormsModule, MovieListComponent, CommonModule],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
     @ViewChild(MovieListComponent) movieList!: MovieListComponent;
     searchText: string = '';
     isFirstClick = true;
@@ -40,6 +41,7 @@ export class AppComponent {
     }
 
     ngOnInit() {
+        console.log('ngOnInit running');
         this.hideFilters();
         for (let year = this.currentYear; year >= 1900; year--) {
             this.years.push(year);
