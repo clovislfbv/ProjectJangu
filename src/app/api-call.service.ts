@@ -27,6 +27,15 @@ export interface DiscoverMovieResponse {
     total_results: number;
 }
 
+export interface Genre {
+  id: number;
+  name: string;
+}
+
+export interface GenreResponse {
+  genres: Genre[];
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -51,5 +60,10 @@ export class ApiCallService {
     SearchMovies(query: string): Observable<DiscoverMovieResponse> {
         const url = this.searchUrlBase + encodeURIComponent(query);
         return this.http.get<DiscoverMovieResponse>(url, { headers: this.headers });
+    }
+
+    getMovieGenres(): Observable<GenreResponse> {
+      const genreUrl = 'https://api.themoviedb.org/3/genre/movie/list?language=en-US';
+      return this.http.get<GenreResponse>(genreUrl, { headers: this.headers });
     }
 }
