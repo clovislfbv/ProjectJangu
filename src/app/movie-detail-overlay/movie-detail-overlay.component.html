@@ -1,0 +1,20 @@
+<div class="overlay-backdrop" (click)="close.emit()">
+  <div class="overlay-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="close.emit()">✕</button>
+
+    <div class="detail-container">
+      <!-- Left: Poster -->
+      <img
+        class="detail-poster"
+        [src]="'https://image.tmdb.org/t/p/original' + movie.poster_path"
+        [alt]="movie.title"
+      />
+
+      <!-- Right: Info -->
+      <div class="detail-info">
+        <h2>{{ movie.title }}</h2>
+        <p>{{ movie.overview }}</p>
+      </div>
+    </div>
+  </div>
+</div>

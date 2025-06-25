@@ -1,5 +1,9 @@
-<div class="movie">
-  <img src="https://image.tmdb.org/t/p/original{{ posterPath }}" alt="{{ title }}" class="movie-poster">
+<div class="movie" (click)="select.emit()">
+  <img
+    [src]="'https://image.tmdb.org/t/p/original' + posterPath"
+    [alt]="title"
+    class="movie-poster"
+  />
   <div class="movie-title">
     <h5>{{ title }}</h5>
   </div>

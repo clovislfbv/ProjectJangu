@@ -1,20 +1,25 @@
 .movie {
-    width: 250px;
-    height: 350px;
+  width: 250px;
+  height: 350px;
 }
 
 .movie-poster {
-    width: 250px;
-    height: 300px;
-    border-radius: 10px;
-    background-size: cover;
-    background-position: center;
+  width: 250px;
+  height: 300px;
+  border-radius: 10px;
+  background-size: cover;
+  background-position: center;
 }
 
 .movie-title {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50px;
-    text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  text-align: center;
 }
+
+.movie-poster:hover {
+  filter: brightness(0.6);
+}
+

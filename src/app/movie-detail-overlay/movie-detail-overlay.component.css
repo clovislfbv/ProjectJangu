@@ -1,0 +1,57 @@
+.overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.overlay-content {
+  background: #222;
+  color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 800px;
+  width: 90%;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  color: #fff;
+  cursor: pointer;
+}
+
+.detail-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.detail-poster {
+  flex-shrink: 0;
+  width: 200px;
+  border-radius: 4px;
+}
+
+.detail-info {
+  flex: 1;
+}
+
+.detail-info h2 {
+  margin-top: 0;
+}
+
+.detail-info p {
+  line-height: 1.5;
+}

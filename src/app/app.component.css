@@ -1,24 +1,24 @@
 app-movie-list {
-    width: 98.5%;
+  width: 98.5%;
 }
 
 .body {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    height: 70%;
-    width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 70%;
+  width: 100%;
 }
 
 .header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-    height: 30%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  height: 30%;
 }
 
 #searchbar {
-    height: 15%;
-    width: 50%;
+  height: 15%;
+  width: 50%;
 }

@@ -1,23 +1,34 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { MovieComponent } from '../movie/movie.component';
-import { NgFor, NgIf } from '@angular/common';
+import { MovieDetailOverlayComponent } from '../movie-detail-overlay/movie-detail-overlay.component';
 import { ApiCallService } from '../api-call.service';
 
 @Component({
   selector: 'app-movie-list',
-  imports: [MovieComponent, NgFor, NgIf],
+  imports: [
+    CommonModule,
+    NgFor,
+    NgIf,
+    MovieComponent,
+    MovieDetailOverlayComponent,
+  ],
   templateUrl: './movie-list.component.html',
-  styleUrl: './movie-list.component.css'
+  styleUrls: ['./movie-list.component.css'],
 })
 export class MovieListComponent implements OnInit {
-  constructor(private api_call: ApiCallService) { }
-
   movies: any[] = [];
+  selectedMovie: any = null;
+
+  constructor(private api_call: ApiCallService) {}
 
   ngOnInit() {
-    this.api_call.DiscoverMovies().subscribe(response => {
-      this.movies = response.results;
-      console.log(this.movies);
-    });
+    this.api_call
+      .DiscoverMovies()
+      .subscribe((response) => (this.movies = response.results));
+  }
+
+  onSelect(movie: any) {
+    this.selectedMovie = movie;
   }
 }
