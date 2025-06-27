@@ -23,7 +23,7 @@ export class SearchBarComponent implements OnInit {
     currentYear = new Date().getFullYear();
     years: number[] = [];
     genres: Genre[] = [];
-    selectedAlphabetic: string = 'original_title.asc';
+    selectedAlphabetic: string = 'popularity.desc';
     selectedYear: string = '';
     selectedGenre: string = '';
 
@@ -39,6 +39,12 @@ export class SearchBarComponent implements OnInit {
     }
 
     onSearch(): void {
+        if (this.isFirstClick) {
+            this.selectedAlphabetic = 'popularity.desc';
+            this.selectedYear = '';
+            this.selectedGenre = '';
+        }
+
         this.search.emit({
             query: this.searchText,
             alphabetic: this.selectedAlphabetic,
