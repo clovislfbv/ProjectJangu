@@ -3,6 +3,23 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { api_key } from '../environments/environment';
 
+export interface CastMember {
+    cast_id: number;
+    character: string;
+    credit_id: string;
+    gender: number;
+    id: number;
+    name: string;
+    order: number;
+    profile_path: string | null;
+}
+
+export interface MovieCreditsResponse {
+    id: number;
+    cast: CastMember[];
+    crew: any[];
+}
+
 export interface Movie {
     adult: boolean;
     backdrop_path: string;
@@ -28,12 +45,12 @@ export interface DiscoverMovieResponse {
 }
 
 export interface Genre {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 export interface GenreResponse {
-  genres: Genre[];
+    genres: Genre[];
 }
 
 @Injectable({
@@ -63,7 +80,12 @@ export class ApiCallService {
     }
 
     getMovieGenres(): Observable<GenreResponse> {
-      const genreUrl = 'https://api.themoviedb.org/3/genre/movie/list?language=en-US';
-      return this.http.get<GenreResponse>(genreUrl, { headers: this.headers });
+        const genreUrl = 'https://api.themoviedb.org/3/genre/movie/list?language=en-US';
+        return this.http.get<GenreResponse>(genreUrl, { headers: this.headers });
+    }
+
+    getMovieCredits(movieId: number): Observable<MovieCreditsResponse> {
+        const url = `https://api.themoviedb.org/3/movie/${movieId}/credits?language=en-US`;
+        return this.http.get<MovieCreditsResponse>(url, { headers: this.headers });
     }
 }

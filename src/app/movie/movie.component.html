@@ -1,10 +1,15 @@
 <div class="movie" (click)="select.emit()">
-  <img
-    [src]="'https://image.tmdb.org/t/p/original' + posterPath"
-    [alt]="title"
-    class="movie-poster"
-  />
-  <div class="movie-title">
-    <h5>{{ title }}</h5>
-  </div>
+    <img
+        [src]="'https://image.tmdb.org/t/p/original' + posterPath"
+        [src]="
+            posterPath
+                ? 'https://image.tmdb.org/t/p/w500' + posterPath
+                : '/assets/placeholder-poster.png'
+        "
+        [alt]="title"
+        class="movie-poster"
+    />
+    <div class="movie-title">
+        <h5>{{ title }}</h5>
+    </div>
 </div>
