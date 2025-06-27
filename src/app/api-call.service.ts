@@ -97,17 +97,20 @@ export class ApiCallService {
 
     constructor(private http: HttpClient) {}
 
-    DiscoverMovies(alphabeticSelect: string = 'original_title.asc', selectedYear : string = ''): Observable<DiscoverMovieResponse> {
+    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear : string = '', selectedGenre: string = ''): Observable<DiscoverMovieResponse> {
         console.log('DiscoverMovies called with:', alphabeticSelect);
         if (selectedYear != "") {
             this.url += `&year=${selectedYear}`;
+        }
+        if (selectedGenre != "") {
+            this.url += `&with_genres=${selectedGenre}`;
         }
         return this.http.get<DiscoverMovieResponse>(this.url + `&sort_by=${alphabeticSelect}`, {
             headers: this.headers,
         });
     }
 
-    SearchMovies(query: string, alphabeticSelect: string = 'original_title.asc'): Observable<DiscoverMovieResponse> {
+    SearchMovies(query: string, alphabeticSelect: string = 'popularity.desc'): Observable<DiscoverMovieResponse> {
         const url = this.searchUrlBase + encodeURIComponent(query);
         return this.http.get<DiscoverMovieResponse>(url, { headers: this.headers });
     }

@@ -19,23 +19,36 @@ export class AppComponent implements OnInit {
     currentYear = new Date().getFullYear();
     years: number[] = [];
     genres: Genre[] = [];
-    selectedAlphabetic: string = 'original_title.asc';
+    selectedAlphabetic: string = 'popularity.desc';
     selectedYear: string = "";
+    selectedGenre: string = "";
 
     constructor(private api_call: ApiCallService) {}
 
     onSearch() {
-        const alphabeticSelect = document.getElementById("alphabeticSelect") as HTMLSelectElement | null;
-        if (alphabeticSelect) {
-            this.selectedAlphabetic = alphabeticSelect.value;
+        const filtersElement = document.getElementById('filters');
+        if (filtersElement && !filtersElement.classList.contains('d-none')) {
+            const alphabeticSelect = document.getElementById("alphabeticSelect") as HTMLSelectElement | null;
+            if (alphabeticSelect) {
+                this.selectedAlphabetic = alphabeticSelect.value;
+            }
+
+            const yearSelect = document.getElementById("yearSelect") as HTMLSelectElement | null;
+            if (yearSelect) {
+                this.selectedYear = yearSelect.value;
+            }
+
+            const genreSelect = document.getElementById("genre") as HTMLSelectElement | null;
+            if (genreSelect) {
+                this.selectedGenre = genreSelect.value;
+            }   
+        } else {
+            this.selectedAlphabetic = 'popularity.desc';
+            this.selectedYear = '';
+            this.selectedGenre = '';
         }
 
-        const yearSelect = document.getElementById("yearSelect") as HTMLSelectElement | null;
-        if (yearSelect) {
-            this.selectedYear = yearSelect.value;
-        }
-
-        this.movieList.search(this.searchText, this.selectedAlphabetic, this.selectedYear);
+        this.movieList.search(this.searchText, this.selectedAlphabetic, this.selectedYear, this.selectedGenre);
     }
 
     displayFilters() {

@@ -23,15 +23,15 @@ export class MovieListComponent implements OnInit {
 
     private loadDiscover() {
         this.api_call
-            .DiscoverMovies('original_title.asc')
+            .DiscoverMovies('popularity.desc', '')
             .subscribe((res: DiscoverMovieResponse) => (this.movies = res.results));
     }
 
     /** Called by the search bar */
-    search(query: string, alphabeticSelect: string = 'original_title.asc', selectedYear: string = '') {
+    search(query: string, alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '') {
         const obs = query.trim()
             ? this.api_call.SearchMovies(query)
-            : this.api_call.DiscoverMovies(alphabeticSelect, selectedYear);
+            : this.api_call.DiscoverMovies(alphabeticSelect, selectedYear, selectedGenre);
 
         obs.subscribe((res: DiscoverMovieResponse) => (this.movies = res.results));
     }

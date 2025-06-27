@@ -30,7 +30,7 @@
         <div class="row justify-content-center" id="filters">
             <div class="col-md-6 all_filters">
                 <select id="genre" class="form-select me-2 custom-select">
-                    <option value="all">All genres</option>
+                    <option value="">All genres</option>
                     <option *ngFor="let genre of genres" [value]="genre.id">
                         {{ genre.name }}
                     </option>
@@ -47,6 +47,7 @@
                 </select>
             </div>
         </div>
+
     </div>
 </div>
 
