@@ -1,25 +1,50 @@
 .movie {
-  width: 250px;
-  height: 350px;
+    width: 250px;
+    height: 350px;
 }
 
 .movie-poster {
-  width: 250px;
-  height: 300px;
-  border-radius: 10px;
-  background-size: cover;
-  background-position: center;
+    width: 250px;
+    height: 300px;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
 }
 
 .movie-title {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 50px;
-  text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    text-align: center;
+    padding: 0 0.5rem;
+    border-radius: 4px;
+}
+
+.movie-title h5 {
+    margin: 0;
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #f0f0f0;
+    text-transform: capitalize;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+.movie:hover h5 {
+    transform: scale(1.05);
+    color: #ffd54f;
 }
 
 .movie-poster:hover {
-  filter: brightness(0.6);
+    filter: brightness(0.6);
 }
-
