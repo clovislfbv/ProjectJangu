@@ -1,0 +1,80 @@
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-9">
+      <div class="input-group mb-3 search-bar">
+        <select
+          class="form-select custom-select"
+          style="max-width: 150px"
+          [(ngModel)]="selectedGenre"
+        >
+          <option value="">Movies</option>
+          <option value="actors">Actors</option>
+        </select>
+
+        <input
+          type="text"
+          class="form-control custom-input"
+          placeholder="Search..."
+          [(ngModel)]="searchText"
+          name="searchText"
+          (keyup.enter)="onSearch()"
+        />
+
+        <button
+          class="search-btn"
+          type="button"
+          (click)="onSearch()"
+        >
+          Search
+        </button>
+
+        <button
+          class="filter-btn"
+          type="button"
+          (click)="toggleFilters()"
+        >
+          <i class="bi bi-funnel"></i>
+          {{ isFirstClick ? 'Filters +' : 'Filters –' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="row justify-content-center"
+    *ngIf="!isFirstClick"
+    id="filters"
+  >
+    <div class="col-md-6 all_filters">
+      <select
+        id="genre"
+        class="form-select me-2 custom-select"
+        [(ngModel)]="selectedGenre"
+      >
+        <option value="">All genres</option>
+        <option *ngFor="let genre of genres" [value]="genre.id">
+          {{ genre.name }}
+        </option>
+      </select>
+      <select
+        id="yearSelect"
+        class="form-select me-2 custom-select"
+        [(ngModel)]="selectedYear"
+      >
+        <option value="">All years</option>
+        <option *ngFor="let year of years" [value]="year">
+          {{ year }}
+        </option>
+      </select>
+      <select
+        name="alphabetic"
+        id="alphabeticSelect"
+        class="form-select custom-select"
+        [(ngModel)]="selectedAlphabetic"
+      >
+        <option value="original_title.asc">A → Z</option>
+        <option value="original_title.desc">Z → A</option>
+      </select>
+    </div>
+  </div>
+</div>

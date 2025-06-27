@@ -1,56 +1,9 @@
 <div class="header">
     <h1>Movie browser</h1>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-9">
-                <div class="input-group mb-3 search-bar">
-                    <select class="form-select custom-select" style="max-width: 150px">
-                        <option value="movies" selected>Movies</option>
-                        <option value="actors">Actors</option>
-                    </select>
-
-                    <input
-                        type="text"
-                        class="form-control custom-input"
-                        placeholder="Search..."
-                        [(ngModel)]="searchText"
-                        name="searchText"
-                        (keyup.enter)="onSearch()"
-                    />
-
-                    <button class="search-btn" type="button" (click)="onSearch()">Search</button>
-
-                    <button class="filter-btn" type="button" (click)="handleClick()">
-                        <i class="bi bi-funnel"></i> Filters +
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="row justify-content-center" id="filters">
-            <div class="col-md-6 all_filters">
-                <select id="genre" class="form-select me-2 custom-select">
-                    <option value="">All genres</option>
-                    <option *ngFor="let genre of genres" [value]="genre.id">
-                        {{ genre.name }}
-                    </option>
-                </select>
-                <select id="yearSelect" class="form-select me-2 custom-select">
-                    <option value="">All years</option>
-                    <option *ngFor="let year of years" [value]="year">
-                        {{ year }}
-                    </option>
-                </select>
-                <select name="alphabetic" id="alphabeticSelect" class="form-select custom-select">
-                    <option value="original_title.asc">Alphabetical order</option>
-                    <option value="original_title.desc">Reverse alphabetical order</option>
-                </select>
-            </div>
-        </div>
-
-    </div>
+    <app-search-bar
+        (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre)"
+    ></app-search-bar>
 </div>
-
 <div class="body">
-    <app-movie-list></app-movie-list>
+    <app-movie-list #movieList></app-movie-list>
 </div>
