@@ -4,8 +4,8 @@
 }
 
 .movie-poster {
-    width: 250px;
-    height: 300px;
+    width: 225px;
+    height: auto;
     border-radius: 10px;
     background-size: cover;
     background-position: center;
@@ -30,7 +30,7 @@
         'Segoe UI',
         Roboto,
         sans-serif;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     font-weight: 500;
     color: #f0f0f0;
     text-transform: capitalize;
