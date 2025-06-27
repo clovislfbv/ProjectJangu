@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiCallService, CastMember } from '../api-call.service';
+import { Genre } from '../api-call.service';
 
 @Component({
     selector: 'app-movie-detail-overlay',
@@ -9,9 +10,10 @@ import { ApiCallService, CastMember } from '../api-call.service';
     templateUrl: './movie-detail-overlay.component.html',
     styleUrls: ['./movie-detail-overlay.component.css'],
 })
-export class MovieDetailOverlayComponent implements OnChanges {
+export class MovieDetailOverlayComponent implements OnChanges, OnInit {
     @Input() movie!: any;
     @Output() close = new EventEmitter<void>();
+    genres: Genre[] = [];
 
     cast: CastMember[] = [];
 
@@ -23,9 +25,23 @@ export class MovieDetailOverlayComponent implements OnChanges {
         }
     }
 
+    ngOnInit() {
+        this.apiCall.getMovieGenres().subscribe((response) => {
+            this.genres = response.genres;
+        });
+    }
+
     private loadCast(movieId: number) {
         this.apiCall.getMovieCredits(movieId).subscribe((response) => {
             this.cast = response.cast || [];
         });
+    }
+
+    getGenreNames(ids: number[], genres: Genre[]): string {
+        if (!ids || !genres) return 'NA';
+        return genres
+            .filter(g => ids.includes(g.id))
+            .map(g => g.name)
+            .join(', ') || 'NA';
     }
 }
