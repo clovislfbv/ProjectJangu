@@ -60,7 +60,9 @@
         name="alphabetic"
         id="alphabeticSelect"
         class="form-select custom-select"
+        [(ngModel)]="selectedAlphabetic"
       >
+        <option value="popularity.desc">Default</option>
         <option value="title.asc">A → Z</option>
         <option value="title.desc">Z → A</option>
       </select>
