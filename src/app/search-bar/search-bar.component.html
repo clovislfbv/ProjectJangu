@@ -1,6 +1,7 @@
 <div class="container">
+  <!-- Search Bar -->
   <div class="row justify-content-center">
-    <div class="col-md-9">
+    <div class="col-auto">
       <div class="input-group mb-3 search-bar">
         <select
           class="form-select custom-select"
@@ -20,19 +21,11 @@
           (keyup.enter)="onSearch()"
         />
 
-        <button
-          class="search-btn"
-          type="button"
-          (click)="onSearch()"
-        >
+        <button class="search-btn" type="button" (click)="onSearch()">
           Search
         </button>
 
-        <button
-          class="filter-btn"
-          type="button"
-          (click)="toggleFilters()"
-        >
+        <button class="filter-btn" type="button" (click)="toggleFilters()">
           <i class="bi bi-funnel"></i>
           {{ isFirstClick ? 'Filters +' : 'Filters –' }}
         </button>
@@ -40,15 +33,11 @@
     </div>
   </div>
 
-  <div
-    class="row justify-content-center"
-    *ngIf="!isFirstClick"
-    id="filters"
-  >
-    <div class="col-md-6 all_filters">
+  <div class="row justify-content-center" *ngIf="!isFirstClick" id="filters">
+    <div class="col-auto all_filters">
       <select
         id="genre"
-        class="form-select me-2 custom-select"
+        class="form-select custom-select"
         [(ngModel)]="selectedGenre"
       >
         <option value="">All genres</option>
@@ -56,9 +45,10 @@
           {{ genre.name }}
         </option>
       </select>
+
       <select
         id="yearSelect"
-        class="form-select me-2 custom-select"
+        class="form-select custom-select"
         [(ngModel)]="selectedYear"
       >
         <option value="">All years</option>
@@ -66,6 +56,7 @@
           {{ year }}
         </option>
       </select>
+
       <select
         name="alphabetic"
         id="alphabeticSelect"
