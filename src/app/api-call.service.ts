@@ -53,6 +53,34 @@ export interface GenreResponse {
     genres: Genre[];
 }
 
+export interface MovieDetails {
+    adult: boolean;
+    backdrop_path: string;
+    belongs_to_collection: any;
+    budget: number;
+    genres: Genre[];
+    homepage: string;
+    id: number;
+    imdb_id: string;
+    original_language: string;
+    original_title: string;
+    overview: string;
+    popularity: number;
+    poster_path: string;
+    production_companies: any[];
+    production_countries: any[];
+    release_date: string;
+    revenue: number;
+    runtime: number;
+    spoken_languages: any[];
+    status: string;
+    tagline: string;
+    title: string;  
+    video: boolean;
+    vote_average: number;
+    vote_count: number;
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -69,12 +97,17 @@ export class ApiCallService {
 
     constructor(private http: HttpClient) {}
 
-    DiscoverMovies(): Observable<DiscoverMovieResponse> {
-        return this.http.get<DiscoverMovieResponse>(this.url, {
+    DiscoverMovies(alphabeticSelect: string = 'original_title.asc', selectedYear : string = ''): Observable<DiscoverMovieResponse> {
+        console.log('DiscoverMovies called with:', alphabeticSelect);
+        if (selectedYear != "") {
+            this.url += `&year=${selectedYear}`;
+        }
+        return this.http.get<DiscoverMovieResponse>(this.url + `&sort_by=${alphabeticSelect}`, {
             headers: this.headers,
         });
     }
-    SearchMovies(query: string): Observable<DiscoverMovieResponse> {
+
+    SearchMovies(query: string, alphabeticSelect: string = 'original_title.asc'): Observable<DiscoverMovieResponse> {
         const url = this.searchUrlBase + encodeURIComponent(query);
         return this.http.get<DiscoverMovieResponse>(url, { headers: this.headers });
     }

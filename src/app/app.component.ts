@@ -19,11 +19,23 @@ export class AppComponent implements OnInit {
     currentYear = new Date().getFullYear();
     years: number[] = [];
     genres: Genre[] = [];
+    selectedAlphabetic: string = 'original_title.asc';
+    selectedYear: string = "";
 
     constructor(private api_call: ApiCallService) {}
 
     onSearch() {
-        this.movieList.search(this.searchText);
+        const alphabeticSelect = document.getElementById("alphabeticSelect") as HTMLSelectElement | null;
+        if (alphabeticSelect) {
+            this.selectedAlphabetic = alphabeticSelect.value;
+        }
+
+        const yearSelect = document.getElementById("yearSelect") as HTMLSelectElement | null;
+        if (yearSelect) {
+            this.selectedYear = yearSelect.value;
+        }
+
+        this.movieList.search(this.searchText, this.selectedAlphabetic, this.selectedYear);
     }
 
     displayFilters() {
