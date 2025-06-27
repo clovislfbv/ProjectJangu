@@ -30,10 +30,28 @@ export class MovieListComponent implements OnInit {
     /** Called by the search bar */
     search(query: string, alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '') {
         const obs = query.trim()
-            ? this.api_call.SearchMovies(query)
+            ? this.api_call.SearchMovies(query, selectedYear)
             : this.api_call.DiscoverMovies(alphabeticSelect, selectedYear, selectedGenre);
 
-        obs.subscribe((res: DiscoverMovieResponse) => (this.movies = res.results));
+        console.log(this.movies);
+
+        obs.subscribe((res: DiscoverMovieResponse) => {
+            this.movies = res.results;
+
+            if (query.trim()) {
+                if (alphabeticSelect !== 'popularity.desc') {
+                    if (alphabeticSelect === 'title.asc') {
+                        this.movies.sort((a, b) => a.title.localeCompare(b.title));
+                    } else if (alphabeticSelect === 'title.desc') {
+                        this.movies.sort((a, b) => b.title.localeCompare(a.title));
+                    }
+                }
+
+                if (selectedGenre) {
+                    this.movies = this.movies.filter(movie => movie.genre_ids.includes(parseInt(selectedGenre)));
+                }
+            }
+        });
     }
 
     onSelect(movie: Movie) {

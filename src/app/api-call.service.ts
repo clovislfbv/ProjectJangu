@@ -86,7 +86,7 @@ export interface MovieDetails {
 })
 export class ApiCallService {
     private url =
-        'https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc';
+        'https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1';
     private searchUrlBase =
         'https://api.themoviedb.org/3/search/movie?include_adult=false&language=en-US&page=1&query=';
 
@@ -110,8 +110,13 @@ export class ApiCallService {
         });
     }
 
-    SearchMovies(query: string, alphabeticSelect: string = 'popularity.desc'): Observable<DiscoverMovieResponse> {
-        const url = this.searchUrlBase + encodeURIComponent(query);
+    SearchMovies(query: string, selectedYear: string = ''): Observable<DiscoverMovieResponse> {
+        let url = this.searchUrlBase + encodeURIComponent(query);
+        if (selectedYear != "") {
+            url += `&year=${selectedYear}`;
+        }
+        console.log('SearchMovies called with:', query, 'and year:', selectedYear);
+        console.log('Final URL:', url);
         return this.http.get<DiscoverMovieResponse>(url, { headers: this.headers });
     }
 
