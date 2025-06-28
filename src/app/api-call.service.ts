@@ -67,17 +67,25 @@ export class ApiCallService {
         Authorization: `Bearer ${api_key}`,
     });
 
+    private date = "";
+    private genre = "";
+
     constructor(private http: HttpClient) {}
 
     DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear : string = '', selectedGenre: string = ''): Observable<DiscoverMovieResponse> {
-        console.log('DiscoverMovies called with:', alphabeticSelect);
         if (selectedYear != "") {
-            this.url += `&year=${selectedYear}`;
+            this.date = `&primary_release_year=${selectedYear}`;
+        } else {
+            this.date = "";
         }
+
         if (selectedGenre != "") {
-            this.url += `&with_genres=${selectedGenre}`;
+            this.genre = `&with_genres=${selectedGenre}`;
+        } else {
+            this.genre = "";
         }
-        return this.http.get<DiscoverMovieResponse>(this.url + `&sort_by=${alphabeticSelect}`, {
+
+        return this.http.get<DiscoverMovieResponse>(this.url + this.date + this.genre + `&sort_by=${alphabeticSelect}`, {
             headers: this.headers,
         });
     }
@@ -85,10 +93,8 @@ export class ApiCallService {
     SearchMovies(query: string, selectedYear: string = ''): Observable<DiscoverMovieResponse> {
         let url = this.searchUrlBase + encodeURIComponent(query);
         if (selectedYear != "") {
-            url += `&year=${selectedYear}`;
+            url += `&primary_release_year=${selectedYear}`;
         }
-        console.log('SearchMovies called with:', query, 'and year:', selectedYear);
-        console.log('Final URL:', url);
         return this.http.get<DiscoverMovieResponse>(url, { headers: this.headers });
     }
 
