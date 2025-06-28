@@ -1,0 +1,63 @@
+<div class="container">
+  <!-- Search Bar -->
+  <div class="row justify-content-center">
+    <div class="col-auto">
+      <div class="input-group mb-3 search-bar">
+        <input
+          type="text"
+          class="form-control custom-input"
+          placeholder="Search..."
+          [(ngModel)]="searchText"
+          name="searchText"
+          (keyup.enter)="onSearch()"
+        />
+
+        <button class="search-btn" type="button" (click)="onSearch()">
+          Search
+        </button>
+
+        <button class="filter-btn" type="button" (click)="toggleFilters()">
+          <i class="bi bi-funnel"></i>
+          {{ isFirstClick ? 'Filters +' : 'Filters –' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center" *ngIf="!isFirstClick" id="filters">
+    <div class="col-auto all_filters">
+      <select
+        id="genre"
+        class="form-select custom-select"
+        [(ngModel)]="selectedGenre"
+      >
+        <option value="">All genres</option>
+        <option *ngFor="let genre of genres" [value]="genre.id">
+          {{ genre.name }}
+        </option>
+      </select>
+
+      <select
+        id="yearSelect"
+        class="form-select custom-select"
+        [(ngModel)]="selectedYear"
+      >
+        <option value="">All years</option>
+        <option *ngFor="let year of years" [value]="year">
+          {{ year }}
+        </option>
+      </select>
+
+      <select
+        name="alphabetic"
+        id="alphabeticSelect"
+        class="form-select custom-select"
+        [(ngModel)]="selectedAlphabetic"
+      >
+        <option value="popularity.desc">Default</option>
+        <option value="title.asc">A → Z</option>
+        <option value="title.desc">Z → A</option>
+      </select>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+<div class="header">
+    <h1>Movie browser</h1>
+    <app-search-bar
+        (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre)"
+    ></app-search-bar>
+</div>
+<div class="body">
+    <app-movie-list #movieList></app-movie-list>
+</div>
