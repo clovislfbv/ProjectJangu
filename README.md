@@ -8,4 +8,16 @@ To start a local server, run:
 ng serve
 ```
 
-To add your TMDB API key, place it at the following path in a variable called api_key: src/environments/environment.ts
+To add your TMDB API key, create (or open) the file at:
+
+```bash
+src/environments/environment.ts
+```
+
+and inside it define your key, for example:
+
+```ts
+// src/environments/environment.ts
+export const api_key = 'YOUR_TMDB_API_KEY';
+```
+
