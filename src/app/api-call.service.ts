@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { api_key } from '../environments/environment';
+import { api_key, youtube_key } from '../environments/environment';
 
 export interface CastMember {
     cast_id: number;
@@ -51,6 +51,20 @@ export interface Genre {
 
 export interface GenreResponse {
     genres: Genre[];
+}
+
+export interface MovieVideosResponse {
+    id: number;
+    results: Array<{
+        id: string;
+        iso_639_1: string;
+        iso_3166_1: string;
+        key: string;
+        name: string;
+        site: string;
+        size: number;
+        type: string;
+    }>;
 }
 
 @Injectable({
@@ -106,5 +120,15 @@ export class ApiCallService {
     getMovieCredits(movieId: number): Observable<MovieCreditsResponse> {
         const url = `https://api.themoviedb.org/3/movie/${movieId}/credits?language=en-US`;
         return this.http.get<MovieCreditsResponse>(url, { headers: this.headers });
+    }
+
+    getMovieVideos(movieId: number): Observable<MovieVideosResponse> {
+        const url = `https://api.themoviedb.org/3/movie/${movieId}/videos?language=en-US`;
+        return this.http.get<MovieVideosResponse>(url, { headers: this.headers });
+    }
+
+    getYouTubeVideoStats(videoId: string): Observable<any> {
+        const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${youtube_key}&part=statistics`;
+        return this.http.get(url);
     }
 }

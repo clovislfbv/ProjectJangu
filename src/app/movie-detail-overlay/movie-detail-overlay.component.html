@@ -36,6 +36,15 @@
                 <p class="overview">
                     {{ movie.overview && movie.overview.trim() ? movie.overview : 'NA' }}
                 </p>
+                <div *ngIf="videos.length > 0" class="video-container">
+                    <iframe
+                        [src]="getVideoUrl(videos[0])"
+                        width="560"
+                        height="315"
+                        frameborder="0"
+                        allowfullscreen>
+                    </iframe>
+                </div>
             </div>
         </div>
 
