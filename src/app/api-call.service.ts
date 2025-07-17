@@ -122,8 +122,8 @@ export class ApiCallService {
         return this.http.get<MovieCreditsResponse>(url, { headers: this.headers });
     }
 
-    getMovieVideos(movieId: number): Observable<MovieVideosResponse> {
-        const url = `https://api.themoviedb.org/3/movie/${movieId}/videos?language=en-US`;
+    getMovieVideos(movieId: number, language : string = "en-US"): Observable<MovieVideosResponse> {
+        const url = `https://api.themoviedb.org/3/movie/${movieId}/videos?language=${language}`;
         return this.http.get<MovieVideosResponse>(url, { headers: this.headers });
     }
 

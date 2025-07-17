@@ -41,7 +41,15 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
     }
 
     private loadVideos(movieId: number) {
-        this.apiCall.getMovieVideos(movieId).subscribe(async (response) => {
+        var language = "en-US";
+        console.log(this.movie.original_language);
+        if (this.movie.original_language == "fr") {
+            language = "fr-FR";
+        }
+
+        console.log(language);
+
+        this.apiCall.getMovieVideos(movieId, language).subscribe(async (response) => {
             const videos = response.results || [];
             
             // Get view counts for YouTube videos
