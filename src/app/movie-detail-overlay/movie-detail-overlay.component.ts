@@ -51,9 +51,11 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
 
         this.apiCall.getMovieVideos(movieId, language).subscribe(async (response) => {
             const videos = response.results || [];
+
+            const trailerVideos = videos.filter((video: any) => video.type === 'Trailer');
             
             // Get view counts for YouTube videos
-            const videosWithViews = await Promise.all(videos.map(async (video: any) => {
+            const videosWithViews = await Promise.all(trailerVideos.map(async (video: any) => {
                 let viewCount = 0;
                 
                 if (video.site === 'YouTube') {
