@@ -72,7 +72,7 @@ export interface MovieVideosResponse {
 })
 export class ApiCallService {
     private url =
-        'https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1';
+        'https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=us-US&page=1&region=fr';
     private searchUrlBase =
         'https://api.themoviedb.org/3/search/movie?include_adult=false&language=en-US&page=1&query=';
 

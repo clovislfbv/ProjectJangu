@@ -1,6 +1,6 @@
-<div class="overlay-backdrop" (click)="close.emit()">
+<div class="overlay-backdrop" (click)="closeOverlay()">
     <div class="overlay-content" (click)="$event.stopPropagation()">
-        <button class="close-btn" (click)="close.emit()">✕</button>
+        <button class="close-btn" (click)="closeOverlay()">✕</button>
 
         <div class="detail-container">
             <!-- Left: Poster -->

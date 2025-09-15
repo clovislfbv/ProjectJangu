@@ -25,6 +25,9 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
         if (changes['movie'] && this.movie?.id) {
             this.loadCast(this.movie.id);
             this.loadVideos(this.movie.id);
+            document.body.classList.add('no-scroll'); // Block scroll
+        } else if (!this.movie) {
+            document.body.classList.remove('no-scroll'); // Restore scroll
         }
     }
 
@@ -32,6 +35,11 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
         this.apiCall.getMovieGenres().subscribe((response) => {
             this.genres = response.genres;
         });
+    }
+
+    closeOverlay() {
+        this.close.emit();
+        document.body.classList.remove('no-scroll');
     }
 
     private loadCast(movieId: number) {
