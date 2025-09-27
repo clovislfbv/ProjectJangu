@@ -1,16 +1,11 @@
 <div class="movie-list">
   <div class="movie-list-body">
-    <ng-container *ngFor="let rowIndex of movies | slice:0:movies.length; let i = index">
-      <div class="row" *ngIf="i % 5 === 0">
-        <ng-container *ngFor="let movie of movies.slice(i, i + 5)">
-          <app-movie
-            [title]="movie.title"
-            [posterPath]="movie.poster_path"
-            (select)="onSelect(movie)"
-          ></app-movie>
-        </ng-container>
-      </div>
-    </ng-container>
+    <app-movie
+      *ngFor="let movie of movies"
+      [title]="movie.title"
+      [posterPath]="movie.poster_path"
+      (select)="onSelect(movie)"
+    ></app-movie>
   </div>
 
   <app-movie-detail-overlay

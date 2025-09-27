@@ -15,8 +15,10 @@ body {
     flex-direction: row;
     justify-content: center;
     width: 100%;
-    height: 70%;
+    flex: 1;
     overflow-x: clip;
+    padding: 1rem;
+    margin-top: 150px;
 }
 
 .header {
@@ -24,7 +26,17 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-    height: 30%;
+    height: auto;
+    min-height: 150px;
+    padding: 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #222;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header h1 {
@@ -35,7 +47,58 @@ body {
     letter-spacing: 2px;
     margin: 0;
     background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-align: center;
+}
+
+/* Tablet styles */
+@media (max-width: 1024px) {
+    .header h1 {
+        font-size: 2.5rem;
+        letter-spacing: 1.5px;
+    }
+    
+    .body {
+        padding: 0 0.5rem;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .header {
+        min-height: 200px;
+        padding: 1rem 0.5rem;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+    }
+    
+    .body {
+        flex: 1;
+        padding: 0 0.25rem;
+        margin-top: 220px;
+    }
+}
+
+/* Small mobile styles */
+@media (max-width: 480px) {
+    .header {
+        min-height: 150px;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .header h1 {
+        font-size: 2.2rem;
+        letter-spacing: 0.8px;
+    }
+    
+    .body {
+        padding: 0 0.1rem;
+        margin-top: 170px;
+    }
 }

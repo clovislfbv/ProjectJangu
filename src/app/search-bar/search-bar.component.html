@@ -12,14 +12,16 @@
           (keyup.enter)="onSearch()"
         />
 
-        <button class="search-btn" type="button" (click)="onSearch()">
-          Search
-        </button>
+        <div class="button-group">
+          <button class="search-btn" type="button" (click)="onSearch()">
+            Search
+          </button>
 
-        <button class="filter-btn" type="button" (click)="toggleFilters()">
-          <i class="bi bi-funnel"></i>
-          {{ isFirstClick ? 'Filters +' : 'Filters –' }}
-        </button>
+          <button class="filter-btn" type="button" (click)="toggleFilters()">
+            <i class="bi bi-funnel"></i>
+            {{ isFirstClick ? 'Filters +' : 'Filters –' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

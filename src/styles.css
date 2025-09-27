@@ -1,6 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+* {
+    box-sizing: border-box;
+}
+
 body {
-    background-color: #222;
+    background-color: #292727;
     font: 13px Verdana, Geneva, sans-serif;
 }
 
@@ -26,4 +30,17 @@ app-root {
 
 .no-scroll {
   overflow: hidden !important;
+}
+
+/* Global responsive utilities */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 12px;
+    }
 }

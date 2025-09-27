@@ -4,6 +4,7 @@
     justify-content: center;
     width: 100%;
     margin: 1rem 0;
+    padding: 0 1rem;
 }
 
 /* Search Bar */
@@ -17,6 +18,7 @@
     gap: 0.5rem;
     height: 3rem;
     max-width: 1100px;
+    width: 100%;
 }
 .search-bar > * {
     height: 100%;
@@ -33,7 +35,7 @@
     border-radius: 4px;
     padding: 0 0.75rem;
     flex: 0 0 150px;
-    min-width: 150px;
+    min-width: 120px;
 }
 .custom-select:focus,
 .custom-select:hover {
@@ -49,7 +51,7 @@
     flex: 3;
     padding: 0 1rem;
     font-size: 1.1rem;
-    min-width: 200px;
+    min-width: 150px;
 }
 .custom-input::placeholder {
     color: #ccc;
@@ -87,12 +89,21 @@
     font-size: 1rem;
     font-weight: 500;
     min-width: 120px;
+    height: 100%;
     cursor: pointer;
     transition:
         border-color 0.2s,
         box-shadow 0.2s,
         background-color 0.2s;
     outline: none;
+}
+
+/* Button Group */
+.button-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    height: 100%;
 }
 
 .filter-btn {
@@ -104,6 +115,7 @@
     font-size: 1rem;
     font-weight: 500;
     min-width: 120px;
+    height: 100%;
     cursor: pointer;
     transition:
         border-color 0.2s,
@@ -134,7 +146,175 @@
 /* Centered Filters Panel */
 .all_filters {
     display: flex;
-    justify-content: space-around;
-    gap: 10px;
+    justify-content: center;
+    gap: 12px;
     max-width: 1100px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .search-bar {
+        max-width: 900px;
+        gap: 0.25rem;
+        padding: 0 0.25rem;
+    }
+    
+    .custom-select {
+        flex: 0 0 120px;
+        min-width: 100px;
+        padding: 0 0.5rem;
+    }
+    
+    .button-group {
+        gap: 0.25rem;
+    }
+    
+    .search-btn,
+    .filter-btn {
+        min-width: 100px;
+        padding: 0 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Tablets and large phones - horizontal layout */
+@media (max-width: 768px) {
+    .search-bar-wrapper,
+    .filters-wrapper {
+        padding: 0 0.5rem;
+    }
+    
+    .all_filters {
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding-bottom: 0.5rem;
+    }
+    
+    .custom-select {
+        flex: 1;
+        min-width: 120px;
+        max-width: 200px;
+    }
+}
+
+/* iPhone 11 and larger phones - keep everything horizontal */
+@media (max-width: 768px) and (min-width: 390px) {
+    .search-bar {
+        gap: 0.25rem;
+        padding: 0 0.25rem;
+        height: 2.75rem;
+        flex-direction: row;
+    }
+    
+    .search-bar > *,
+    .button-group {
+        height: 100%;
+    }
+    
+    .custom-input {
+        min-width: 120px;
+        font-size: 0.95rem;
+        padding: 0 0.75rem;
+        flex: 1;
+        width: auto;
+        order: 0;
+    }
+    
+    .button-group {
+        gap: 0.25rem;
+        flex: 0 0 auto;
+        order: 1;
+        display: flex;
+        align-items: center;
+    }
+    
+    .search-btn,
+    .filter-btn {
+        min-width: 75px;
+        padding: 0 0.5rem;
+        font-size: 0.85rem;
+        height: 100%;
+        flex: none;
+    }
+}
+
+/* Smaller phones - stack vertically */
+@media (max-width: 389px) {
+    .search-bar-wrapper,
+    .filters-wrapper {
+        padding: 0 0.5rem;
+    }
+    
+    .search-bar {
+        flex-direction: column;
+        height: auto;
+        gap: 0.5rem;
+        padding: 1rem 0.5rem;
+    }
+    
+    .custom-input {
+        height: 2.5rem;
+        width: 100%;
+        min-width: unset;
+        font-size: 1rem;
+        order: 1;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 0.5rem;
+        order: 2;
+    }
+    
+    .search-btn,
+    .filter-btn {
+        height: 2.5rem;
+        flex: 1;
+    }
+    
+    .all_filters {
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding-bottom: 0.5rem;
+    }
+    
+    .custom-select {
+        flex: 1;
+        min-width: 100px;
+        max-width: 150px;
+    }
+}
+
+/* Very small phones - additional refinements */
+@media (max-width: 360px) {
+    .search-bar-wrapper,
+    .filters-wrapper {
+        padding: 0 0.25rem;
+        margin: 0.5rem 0;
+    }
+    
+    .search-bar {
+        padding: 0.75rem 0.25rem;
+    }
+    
+    .custom-input {
+        height: 2.25rem;
+        font-size: 0.9rem;
+        padding: 0 0.75rem;
+    }
+    
+    .search-btn,
+    .filter-btn {
+        height: 2.25rem;
+        font-size: 0.85rem;
+        min-width: unset;
+    }
 }

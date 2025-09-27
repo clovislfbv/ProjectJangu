@@ -1,20 +1,83 @@
-.row {
-    display: flex;
-    flex-direction: row;
-    padding-top: 2%;
-    padding-bottom: 2%;
-    justify-content: space-around;
-}
-
-app-movie {
-    width : 20%;
-    height: 90%;
-    display: flex;
-    justify-content: center;
-}
-
 .movie-list {
     display: flex;
     flex-direction: column;
     background-color: #292727;
+    width: 100%;
+}
+
+.movie-list-body {
+    width: 100%;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    justify-items: center;
+}
+
+app-movie {
+    width: 100%;
+    max-width: 250px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Legacy row support for existing structure */
+.row {
+    display: contents;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .movie-list-body {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.25rem;
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .movie-list-body {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem;
+    }
+    
+    app-movie {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .movie-list-body {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    app-movie {
+        max-width: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-list-body {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        padding: 0.25rem 0.1rem;
+    }
+    
+    app-movie {
+        max-width: 160px;
+    }
+}
+
+@media (max-width: 360px) {
+    .movie-list-body {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    app-movie {
+        max-width: 140px;
+    }
 }
