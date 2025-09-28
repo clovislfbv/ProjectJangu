@@ -1,0 +1,42 @@
+workflows:
+  ios-workflow:
+    name: Build iOS App (Angular + Capacitor)
+    max_build_duration: 60
+    environment:
+      vars:
+        NODE_VERSION: 20
+        CAPACITOR_PLATFORM: ios
+      node: $NODE_VERSION
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install -g @angular/cli
+          npm ci
+      - name: Build Angular app
+        script: |
+          ng build --configuration production
+      - name: Sync Capacitor
+        script: |
+          npx cap sync $CAPACITOR_PLATFORM
+      - name: Build iOS app
+        script: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/build/App.xcarchive archive
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath $CM_BUILD_DIR/build/App.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath $CM_BUILD_DIR/build/ios
+
+    artifacts:
+      - build/ios/*.ipa
+      - build/ios/*.app
+
