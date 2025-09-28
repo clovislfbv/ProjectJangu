@@ -1,4 +1,112 @@
 workflows:
+  # Angular Web Build
+  web-build:
+    name: Build Angular Web App
+    max_build_duration: 30
+    environment:
+      vars:
+        NODE_VERSION: 20
+        # Add your API keys as environment variables in Codemagic
+        TMDB_API_KEY: $TMDB_API_KEY
+        YOUTUBE_API_KEY: $YOUTUBE_API_KEY
+      node: $NODE_VERSION
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install -g @angular/cli
+          npm ci
+      - name: Create environment files
+        script: |
+          # Create environment.ts (for development)
+          cat > src/environments/environment.ts << EOF
+          export const environment = {
+            production: false,
+            api_key: '$TMDB_API_KEY',
+            youtube_key: '$YOUTUBE_API_KEY'
+          };
+
+          // Pour compatibilité avec votre code actuel
+          export const api_key = environment.api_key;
+          export const youtube_key = environment.youtube_key;
+          EOF
+
+          # Create environment.prod.ts (for production)
+          cat > src/environments/environment.prod.ts << EOF
+          export const environment = {
+            production: true,
+            api_key: '$TMDB_API_KEY',
+            youtube_key: '$YOUTUBE_API_KEY'
+          };
+
+          // Pour compatibilité avec votre code actuel
+          export const api_key = environment.api_key;
+          export const youtube_key = environment.youtube_key;
+          EOF
+      - name: Build Angular app
+        script: |
+          ng build --configuration production
+    artifacts:
+      - dist/project-jangu/**/*
+
+  # Android Build
+  android-workflow:
+    name: Build Android App (Angular + Capacitor)
+    max_build_duration: 60
+    environment:
+      vars:
+        NODE_VERSION: 20
+        CAPACITOR_PLATFORM: android
+        # Add your API keys as environment variables in Codemagic
+        TMDB_API_KEY: $TMDB_API_KEY
+        YOUTUBE_API_KEY: $YOUTUBE_API_KEY
+      node: $NODE_VERSION
+      java: 17
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install -g @angular/cli
+          npm ci
+      - name: Create environment files
+        script: |
+          # Create environment.ts (for development)
+          cat > src/environments/environment.ts << EOF
+          export const environment = {
+            production: false,
+            api_key: '$TMDB_API_KEY',
+            youtube_key: '$YOUTUBE_API_KEY'
+          };
+
+          // Pour compatibilité avec votre code actuel
+          export const api_key = environment.api_key;
+          export const youtube_key = environment.youtube_key;
+          EOF
+
+          # Create environment.prod.ts (for production)
+          cat > src/environments/environment.prod.ts << EOF
+          export const environment = {
+            production: true,
+            api_key: '$TMDB_API_KEY',
+            youtube_key: '$YOUTUBE_API_KEY'
+          };
+
+          // Pour compatibilité avec votre code actuel
+          export const api_key = environment.api_key;
+          export const youtube_key = environment.youtube_key;
+          EOF
+      - name: Build Angular app
+        script: |
+          ng build --configuration production
+      - name: Sync Capacitor
+        script: |
+          npx cap sync $CAPACITOR_PLATFORM
+      - name: Build Android app
+        script: |
+          cd android
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+
+  # iOS Build
   ios-workflow:
     name: Build iOS App (Angular + Capacitor)
     max_build_duration: 60
@@ -6,6 +114,9 @@ workflows:
       vars:
         NODE_VERSION: 20
         CAPACITOR_PLATFORM: ios
+        # Add your API keys as environment variables in Codemagic
+        TMDB_API_KEY: $TMDB_API_KEY
+        YOUTUBE_API_KEY: $YOUTUBE_API_KEY
       node: $NODE_VERSION
       xcode: latest
       cocoapods: default
@@ -14,12 +125,43 @@ workflows:
         script: |
           npm install -g @angular/cli
           npm ci
+      - name: Create environment files
+        script: |
+          # Create environment.ts (for development)
+          cat > src/environments/environment.ts << EOF
+          export const environment = {
+            production: false,
+            api_key: '$TMDB_API_KEY',
+            youtube_key: '$YOUTUBE_API_KEY'
+          };
+
+          // Pour compatibilité avec votre code actuel
+          export const api_key = environment.api_key;
+          export const youtube_key = environment.youtube_key;
+          EOF
+
+          # Create environment.prod.ts (for production)
+          cat > src/environments/environment.prod.ts << EOF
+          export const environment = {
+            production: true,
+            api_key: '$TMDB_API_KEY',
+            youtube_key: '$YOUTUBE_API_KEY'
+          };
+
+          // Pour compatibilité avec votre code actuel
+          export const api_key = environment.api_key;
+          export const youtube_key = environment.youtube_key;
+          EOF
       - name: Build Angular app
         script: |
           ng build --configuration production
       - name: Sync Capacitor
         script: |
           npx cap sync $CAPACITOR_PLATFORM
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App
+          pod install
       - name: Build iOS app
         script: |
           cd ios/App
@@ -28,15 +170,8 @@ workflows:
             -scheme App \
             -sdk iphoneos \
             -configuration Release \
-            -archivePath $CM_BUILD_DIR/build/App.xcarchive archive
-
-          xcodebuild \
-            -exportArchive \
             -archivePath $CM_BUILD_DIR/build/App.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath $CM_BUILD_DIR/build/ios
-
+            archive
     artifacts:
-      - build/ios/*.ipa
-      - build/ios/*.app
+      - build/App.xcarchive/**/*
 
