@@ -102,9 +102,14 @@ workflows:
       - name: Build Android app
         script: |
           cd android
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
+      - name: Sign Android app (optional)
+        script: |
+          # Add signing configuration if you have keystore
+          echo "Android APK built successfully"
     artifacts:
-      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/apk/release/*.apk
+      - android/app/build/outputs/bundle/release/*.aab
 
   # iOS Build
   ios-workflow:
@@ -117,9 +122,15 @@ workflows:
         # Add your API keys as environment variables in Codemagic
         TMDB_API_KEY: $TMDB_API_KEY
         YOUTUBE_API_KEY: $YOUTUBE_API_KEY
+        # Add your Apple Developer Team ID for iOS signing
+        TEAM_ID: $TEAM_ID
       node: $NODE_VERSION
       xcode: latest
       cocoapods: default
+      # Uncomment and configure these for app store distribution
+      # ios_signing:
+      #   distribution_type: app_store
+      #   bundle_identifier: com.yourcompany.projectjangu
     scripts:
       - name: Install dependencies
         script: |
@@ -172,6 +183,36 @@ workflows:
             -configuration Release \
             -archivePath $CM_BUILD_DIR/build/App.xcarchive \
             archive
+      - name: Export IPA
+        script: |
+          cd ios/App
+          # Create export options plist
+          cat > ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>teamID</key>
+              <string>\$TEAM_ID</string>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+          
+          # Export IPA
+          xcodebuild \
+            -exportArchive \
+            -archivePath $CM_BUILD_DIR/build/App.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath $CM_BUILD_DIR/build/ios
     artifacts:
+      - build/ios/*.ipa
       - build/App.xcarchive/**/*
 
