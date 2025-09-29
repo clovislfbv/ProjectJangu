@@ -14,6 +14,7 @@ import { ApiCallService, DiscoverMovieResponse, Movie } from '../api-call.servic
 export class MovieListComponent implements OnInit {
     movies: Movie[] = [];
     selectedMovie: Movie | null = null;
+    isLoading: boolean = true;
 
     constructor(private api_call: ApiCallService) {}
 
@@ -22,13 +23,18 @@ export class MovieListComponent implements OnInit {
     }
 
     private loadDiscover() {
+        this.isLoading = true;
         this.api_call
             .DiscoverMovies('popularity.desc', '')
-            .subscribe((res: DiscoverMovieResponse) => (this.movies = res.results));
+            .subscribe((res: DiscoverMovieResponse) => {
+                this.movies = res.results;
+                this.isLoading = false;
+            });
     }
 
     /** Called by the search bar */
     search(query: string, alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '') {
+        this.isLoading = true;
         const obs = query.trim()
             ? this.api_call.SearchMovies(query, selectedYear)
             : this.api_call.DiscoverMovies(alphabeticSelect, selectedYear, selectedGenre);
@@ -51,6 +57,8 @@ export class MovieListComponent implements OnInit {
                     this.movies = this.movies.filter(movie => movie.genre_ids.includes(parseInt(selectedGenre)));
                 }
             }
+            
+            this.isLoading = false;
         });
     }
 

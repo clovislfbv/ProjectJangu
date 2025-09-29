@@ -4,16 +4,20 @@
     <div class="col-auto">
       <div class="input-group mb-3 search-bar">
         <input
+          #searchInput
           type="text"
           class="form-control custom-input"
           placeholder="Search..."
           [(ngModel)]="searchText"
           name="searchText"
-          (keyup.enter)="onSearch()"
+          (keyup.enter)="onSearch(searchInput)"
+          (keypress)="onKeyPress($event, searchInput)"
+          inputmode="search"
+          enterkeyhint="search"
         />
 
         <div class="button-group">
-          <button class="search-btn" type="button" (click)="onSearch()">
+          <button class="search-btn" type="button" (click)="onSearch(searchInput)">
             Search
           </button>
 

@@ -52,6 +52,11 @@
     padding: 0 1rem;
     font-size: 1.1rem;
     min-width: 150px;
+    /* Mobile keyboard optimization */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    touch-action: manipulation;
 }
 .custom-input::placeholder {
     color: #ccc;
@@ -60,6 +65,8 @@
 .custom-input:focus {
     border-color: #888;
     box-shadow: 0 0 0 0.2rem rgba(100, 100, 100, 0.2);
+    /* Prevent zoom on iOS */
+    font-size: max(1.1rem, 16px);
 }
 
 /* Buttons */
@@ -261,8 +268,13 @@
         height: 2.5rem;
         width: 100%;
         min-width: unset;
-        font-size: 1rem;
+        font-size: max(1rem, 16px);
         order: 1;
+        /* Enhanced mobile keyboard support */
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
     }
     
     .button-group {

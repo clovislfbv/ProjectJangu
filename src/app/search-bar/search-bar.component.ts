@@ -38,7 +38,7 @@ export class SearchBarComponent implements OnInit {
         });
     }
 
-    onSearch(): void {
+    onSearch(inputElement?: HTMLInputElement): void {
         if (this.isFirstClick) {
             this.selectedAlphabetic = 'popularity.desc';
             this.selectedYear = '';
@@ -51,6 +51,18 @@ export class SearchBarComponent implements OnInit {
             year: this.selectedYear,
             genre: this.selectedGenre,
         });
+
+        // Hide keyboard on mobile after search
+        if (inputElement) {
+            inputElement.blur();
+        }
+    }
+
+    onKeyPress(event: KeyboardEvent, inputElement: HTMLInputElement): void {
+        if (event.key === 'Enter' || event.keyCode === 13) {
+            event.preventDefault();
+            this.onSearch(inputElement);
+        }
     }
 
     toggleFilters(): void {

@@ -6,6 +6,23 @@
       [posterPath]="movie.poster_path"
       (select)="onSelect(movie)"
     ></app-movie>
+    
+    <!-- No movies found message -->
+    <div *ngIf="movies.length === 0 && !isLoading" class="no-movies-message">
+      <div class="no-movies-content">
+        <i class="no-movies-icon">🎬</i>
+        <h3>No movies found</h3>
+        <p>Try adjusting your search criteria or browse our popular movies.</p>
+      </div>
+    </div>
+    
+    <!-- Loading message -->
+    <div *ngIf="isLoading" class="loading-message">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p>Loading movies...</p>
+      </div>
+    </div>
   </div>
 
   <app-movie-detail-overlay

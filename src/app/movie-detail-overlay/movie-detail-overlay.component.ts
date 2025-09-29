@@ -25,9 +25,9 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
         if (changes['movie'] && this.movie?.id) {
             this.loadCast(this.movie.id);
             this.loadVideos(this.movie.id);
-            document.body.classList.add('no-scroll'); // Block scroll
+            this.preventBodyScrollOnIOS();
         } else if (!this.movie) {
-            document.body.classList.remove('no-scroll'); // Restore scroll
+            this.restoreBodyScrollOnIOS();
         }
     }
 
@@ -38,7 +38,32 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
     }
 
     closeOverlay() {
+        this.restoreBodyScrollOnIOS();
         this.close.emit();
+    }
+
+    private isIOSPhone(): boolean {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isIOS = /iphone|ipad|ipod/.test(userAgent);
+        const isPhone = window.innerWidth <= 768; // Phone screen size
+        return isIOS && isPhone;
+    }
+
+    private preventBodyScrollOnIOS() {
+        if (this.isIOSPhone()) {
+            // Prevent body scrolling on iOS phones using touch events
+            document.body.style.position = 'fixed';
+        }
+        // Always add the CSS class for general styling
+        document.body.classList.add('no-scroll');
+    }
+
+    private restoreBodyScrollOnIOS() {
+        if (this.isIOSPhone()) {
+            // Restore body scrolling on iOS phones
+            document.body.style.position = '';
+        }
+        // Always remove the CSS class
         document.body.classList.remove('no-scroll');
     }
 
