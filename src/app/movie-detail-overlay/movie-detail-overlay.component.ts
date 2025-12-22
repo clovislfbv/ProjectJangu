@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ApiCallService, CastMember } from '../api-call.service';
+import { ApiCallService, CastMember, MovieDetailsResponse } from '../api-call.service';
 import { Genre } from '../api-call.service';
 
 @Component({
@@ -18,6 +18,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
 
     cast: CastMember[] = [];
     videos: any[] = [];
+    runtimeMinutes: number | null = null;
 
     constructor(private apiCall: ApiCallService, private sanitizer: DomSanitizer) {}
 
@@ -25,9 +26,11 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
         if (changes['movie'] && this.movie?.id) {
             this.loadCast(this.movie.id);
             this.loadVideos(this.movie.id);
+            this.loadRuntime(this.movie.id);
             this.preventBodyScrollOnIOS();
         } else if (!this.movie) {
             this.restoreBodyScrollOnIOS();
+            this.runtimeMinutes = null;
         }
     }
 
@@ -74,15 +77,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
     }
 
     private loadVideos(movieId: number) {
-        var language = "en-US";
-        console.log(this.movie.original_language);
-        if (this.movie.original_language == "fr") {
-            language = "fr-FR";
-        }
-
-        console.log(language);
-
-        this.apiCall.getMovieVideos(movieId, language).subscribe(async (response) => {
+        this.apiCall.getMovieVideos(movieId, { originalLanguage: this.movie?.original_language }).subscribe(async (response) => {
             const videos = response.results || [];
 
             const trailerVideos = videos.filter((video: any) => video.type === 'Trailer');
@@ -119,6 +114,21 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
                 return (b.size || 0) - (a.size || 0);
             });
         });
+    }
+
+    private loadRuntime(movieId: number) {
+        this.apiCall.getMovieDetails(movieId, { originalLanguage: this.movie?.original_language }).subscribe((response: MovieDetailsResponse) => {
+            this.runtimeMinutes = response?.runtime ?? null;
+        });
+    }
+
+    formatRuntime(minutes: number | null | undefined): string {
+        if (!minutes || minutes <= 0) return 'NA';
+        const hours = Math.floor(minutes / 60);
+        const remaining = minutes % 60;
+        if (hours <= 0) return `${minutes} min`;
+        const paddedMinutes = remaining.toString().padStart(2, '0');
+        return `${hours}h ${paddedMinutes}min`;
     }
 
     getGenreNames(ids: number[], genres: Genre[]): string {

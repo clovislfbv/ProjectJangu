@@ -22,6 +22,9 @@
                         {{ movie.release_date ? (movie.release_date | date: 'longDate') : 'NA' }}
                     </span>
                     <span class="pill">
+                        {{ formatRuntime(runtimeMinutes) }}
+                    </span>
+                    <span class="pill">
                         ⭐ {{ movie.vote_average != null ? movie.vote_average : 'NA' }}
                     </span>
                     <span class="pill">
