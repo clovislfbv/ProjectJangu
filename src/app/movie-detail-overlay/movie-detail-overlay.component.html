@@ -39,6 +39,29 @@
                 <p class="overview">
                     {{ movie.overview && movie.overview.trim() ? movie.overview : 'NA' }}
                 </p>
+
+                <h2 class="overview-label">Streaming</h2>
+                <div *ngIf="streamingLinksLoaded && streamingLinks.length > 0; else noProviders" class="providers">
+                    <a
+                        *ngFor="let item of streamingLinks"
+                        class="provider-pill"
+                        [href]="item.webUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <img
+                            *ngIf="item.logoUrl"
+                            class="provider-logo"
+                            [src]="item.logoUrl"
+                            [alt]="item.name"
+                        />
+                        <span>{{ item.name }}</span>
+                    </a>
+                </div>
+                <ng-template #noProviders>
+                    <p *ngIf="streamingLinksLoaded" class="no-cast">{{ getNoStreamingFoundMessage() }}</p>
+                </ng-template>
+
                 <div *ngIf="videos.length > 0" class="video-container">
                     <iframe
                         [src]="getVideoUrl(videos[0])"

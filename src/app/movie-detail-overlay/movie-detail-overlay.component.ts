@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ApiCallService, CastMember, MovieDetailsResponse } from '../api-call.service';
+import { ApiCallService, CastMember, MovieDetailsResponse, StreamingLink } from '../api-call.service';
 import { Genre } from '../api-call.service';
 
 @Component({
@@ -19,6 +19,8 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
     cast: CastMember[] = [];
     videos: any[] = [];
     runtimeMinutes: number | null = null;
+    streamingLinks: StreamingLink[] = [];
+    streamingLinksLoaded = false;
 
     constructor(private apiCall: ApiCallService, private sanitizer: DomSanitizer) {}
 
@@ -27,10 +29,13 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
             this.loadCast(this.movie.id);
             this.loadVideos(this.movie.id);
             this.loadRuntime(this.movie.id);
+            this.loadStreamingLinks(this.movie.id);
             this.preventBodyScrollOnIOS();
         } else if (!this.movie) {
             this.restoreBodyScrollOnIOS();
             this.runtimeMinutes = null;
+            this.streamingLinks = [];
+            this.streamingLinksLoaded = false;
         }
     }
 
@@ -120,6 +125,32 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
         this.apiCall.getMovieDetails(movieId, { originalLanguage: this.movie?.original_language }).subscribe((response: MovieDetailsResponse) => {
             this.runtimeMinutes = response?.runtime ?? null;
         });
+    }
+
+    private loadStreamingLinks(movieId: number) {
+        this.streamingLinksLoaded = false;
+        this.apiCall.getStreamingLinksForTmdbMovie(movieId).subscribe((links) => {
+            this.streamingLinks = links || [];
+            this.streamingLinksLoaded = true;
+        });
+    }
+
+    getNoStreamingFoundMessage(): string {
+        const lang = (typeof navigator !== 'undefined' && navigator.language)
+            ? navigator.language.split('-')[0].toLowerCase()
+            : 'en';
+
+        const messages: Record<string, string> = {
+            fr: 'Aucun service de streaming trouvé pour ce film',
+            en: 'No streaming service found for this title',
+            es: 'No se encontró ningún servicio de streaming para este título',
+            de: 'Kein Streaming-Dienst für diesen Titel gefunden',
+            it: 'Nessun servizio di streaming trovato per questo titolo',
+            pt: 'Nenhum serviço de streaming encontrado para este título',
+            nl: 'Geen streamingdienst gevonden voor deze titel',
+        };
+
+        return messages[lang] ?? messages['en'];
     }
 
     formatRuntime(minutes: number | null | undefined): string {
