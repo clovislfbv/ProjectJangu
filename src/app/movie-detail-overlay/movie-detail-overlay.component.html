@@ -35,10 +35,13 @@
                     </span>
                 </div>
 
-                <h2 class="overview-label">Overview</h2>
-                <p class="overview">
-                    {{ movie.overview && movie.overview.trim() ? movie.overview : 'NA' }}
+                <h2 class="overview-label">{{ getOverviewLabel() }}</h2>
+                <p *ngIf="overviewResolved && displayedOverview; else noOverview" class="overview">
+                    {{ displayedOverview }}
                 </p>
+                <ng-template #noOverview>
+                    <p *ngIf="overviewResolved" class="no-cast">{{ getNoOverviewMessage() }}</p>
+                </ng-template>
 
                 <h2 class="overview-label">Streaming</h2>
                 <div *ngIf="streamingLinksLoaded && streamingLinks.length > 0; else noProviders" class="providers">

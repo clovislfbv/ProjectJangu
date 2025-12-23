@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { api_key, youtube_key, watchmode_api_key } from '../environments/environment';
 
 export interface CastMember {
@@ -71,6 +71,11 @@ export interface MovieVideosResponse {
 export interface MovieDetailsResponse {
     id: number;
     runtime: number | null;
+}
+
+export interface MovieOverviewResponse {
+    id: number;
+    overview?: string | null;
 }
 
 export interface WatchProvider {
@@ -348,10 +353,10 @@ export class ApiCallService {
         );
     }
 
-    private buildDiscoverUrlBase(language: string): string {
+    private buildDiscoverUrlBase(language: string, page: number = 1): string {
         const region = this.getUserRegion();
         const regionParam = region ? `&region=${region}` : '';
-        return `${this.tmdbBaseUrl}/discover/movie?include_adult=false&include_video=false&language=${language}&page=1${regionParam}`;
+        return `${this.tmdbBaseUrl}/movie/now_playing?include_adult=false&include_video=false&language=${language}&page=${page}${regionParam}`;
     }
 
     private buildSearchUrlBase(language: string): string {
@@ -385,6 +390,33 @@ export class ApiCallService {
         return tryAt(0);
     }
 
+    private getWithLanguageFallbackAndLanguage<T>(
+        urlForLanguage: (language: string) => string,
+        hasResults: (response: T) => boolean,
+        languages: string[],
+    ): Observable<{ language: string; response: T }> {
+        const tryAt = (index: number): Observable<{ language: string; response: T }> => {
+            const language = languages[index];
+            return this.http.get<T>(urlForLanguage(language), { headers: this.headers }).pipe(
+                switchMap((response) => {
+                    const ok = hasResults(response);
+                    if (ok || index >= languages.length - 1) {
+                        return of({ language, response });
+                    }
+                    return tryAt(index + 1);
+                }),
+                catchError((error) => {
+                    if (index < languages.length - 1) {
+                        return tryAt(index + 1);
+                    }
+                    return throwError(() => error);
+                }),
+            );
+        };
+
+        return tryAt(0);
+    }
+
     DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear : string = '', selectedGenre: string = ''): Observable<DiscoverMovieResponse> {
         if (selectedYear != "") {
             this.date = `&primary_release_year=${selectedYear}`;
@@ -398,10 +430,36 @@ export class ApiCallService {
             this.genre = "";
         }
 
-        return this.getWithLanguageFallback<DiscoverMovieResponse>(
-            (language) => this.buildDiscoverUrlBase(language) + this.date + this.genre + `&sort_by=${alphabeticSelect}`,
+        const urlForPage = (language: string, page: number) =>
+            this.buildDiscoverUrlBase(language, page) + this.date + this.genre + `&sort_by=${alphabeticSelect}`;
+
+        // Page 1 first; if multiple pages exist, also load page 2 and append.
+        // (No extra calls when there's only one page.)
+        return this.getWithLanguageFallbackAndLanguage<DiscoverMovieResponse>(
+            (language) => urlForPage(language, 1),
             (response) => Array.isArray(response?.results) && response.results.length > 0,
             this.getLanguageFallbacks(),
+        ).pipe(
+            switchMap(({ language, response: page1 }) => {
+                const totalPages = page1?.total_pages ?? 0;
+                if (totalPages <= 1) return of(page1);
+
+                // Load page 2 only (if it exists) and append to page 1.
+                return this.http.get<DiscoverMovieResponse>(urlForPage(language, 2), { headers: this.headers }).pipe(
+                    map((page2) => {
+                        const mergedResults = [
+                            ...(page1?.results ?? []),
+                            ...(page2?.results ?? []),
+                        ];
+                        return {
+                            ...page1,
+                            results: mergedResults,
+                        };
+                    }),
+                    // If page 2 fails, keep page 1.
+                    catchError(() => of(page1)),
+                );
+            }),
         );
     }
 
@@ -463,6 +521,33 @@ export class ApiCallService {
             (language) => `${this.tmdbBaseUrl}/movie/${movieId}?language=${language}`,
             (response) => response != null && response.runtime != null,
             this.getLanguageFallbacks(options?.originalLanguage),
+        );
+    }
+
+    getMovieOverview(movieId: number): Observable<string | null> {
+        const preferredLanguage = this.getUserLanguageTag();
+        const fallbackLanguage = 'en-US';
+
+        const fetchOverview = (language: string): Observable<string | null> => {
+            const url = `${this.tmdbBaseUrl}/movie/${movieId}?language=${encodeURIComponent(language)}`;
+            return this.http.get<MovieOverviewResponse>(url, { headers: this.headers }).pipe(
+                switchMap((res) => {
+                    const overview = (res?.overview ?? '').trim();
+                    return of(overview.length > 0 ? overview : null);
+                }),
+            );
+        };
+
+        // Prefer user's language; if overview is missing, fallback to en-US.
+        // If the preferred request fails, also fallback to en-US.
+        return fetchOverview(preferredLanguage).pipe(
+            catchError(() => of(null)),
+            switchMap((overview) => {
+                if (overview) return of(overview);
+                return fetchOverview(fallbackLanguage).pipe(
+                    catchError(() => of(null)),
+                );
+            }),
         );
     }
 

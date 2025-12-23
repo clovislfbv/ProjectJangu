@@ -22,10 +22,14 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
     streamingLinks: StreamingLink[] = [];
     streamingLinksLoaded = false;
 
+    displayedOverview: string | null = null;
+    overviewResolved = false;
+
     constructor(private apiCall: ApiCallService, private sanitizer: DomSanitizer) {}
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['movie'] && this.movie?.id) {
+            this.resolveOverview();
             this.loadCast(this.movie.id);
             this.loadVideos(this.movie.id);
             this.loadRuntime(this.movie.id);
@@ -36,7 +40,26 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
             this.runtimeMinutes = null;
             this.streamingLinks = [];
             this.streamingLinksLoaded = false;
+
+            this.displayedOverview = null;
+            this.overviewResolved = false;
         }
+    }
+
+    private resolveOverview() {
+        this.overviewResolved = false;
+        const fromList = (this.movie?.overview ?? '').trim();
+        if (fromList.length > 0) {
+            this.displayedOverview = fromList;
+            this.overviewResolved = true;
+            return;
+        }
+
+        this.displayedOverview = null;
+        this.apiCall.getMovieOverview(this.movie.id).subscribe((overview) => {
+            this.displayedOverview = overview;
+            this.overviewResolved = true;
+        });
     }
 
     ngOnInit() {
@@ -148,6 +171,42 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
             it: 'Nessun servizio di streaming trovato per questo titolo',
             pt: 'Nenhum serviço de streaming encontrado para este título',
             nl: 'Geen streamingdienst gevonden voor deze titel',
+        };
+
+        return messages[lang] ?? messages['en'];
+    }
+
+    getOverviewLabel(): string {
+        const lang = (typeof navigator !== 'undefined' && navigator.language)
+            ? navigator.language.split('-')[0].toLowerCase()
+            : 'en';
+
+        const labels: Record<string, string> = {
+            fr: 'Résumé',
+            en: 'Overview',
+            es: 'Resumen',
+            de: 'Übersicht',
+            it: 'Trama',
+            pt: 'Sinopse',
+            nl: 'Overzicht',
+        };
+
+        return labels[lang] ?? labels['en'];
+    }
+
+    getNoOverviewMessage(): string {
+        const lang = (typeof navigator !== 'undefined' && navigator.language)
+            ? navigator.language.split('-')[0].toLowerCase()
+            : 'en';
+
+        const messages: Record<string, string> = {
+            fr: 'Aucun résumé disponible',
+            en: 'No overview available',
+            es: 'No hay resumen disponible',
+            de: 'Keine Übersicht verfügbar',
+            it: 'Nessuna trama disponibile',
+            pt: 'Nenhuma sinopse disponível',
+            nl: 'Geen overzicht beschikbaar',
         };
 
         return messages[lang] ?? messages['en'];
