@@ -18,6 +18,10 @@ export class MovieListComponent implements OnInit {
 
     constructor(private api_call: ApiCallService) {}
 
+    private excludeAdultMovies(movies: Movie[]): Movie[] {
+        return (movies || []).filter(movie => !movie.adult);
+    }
+
     ngOnInit() {
         this.loadDiscover();
     }
@@ -27,23 +31,33 @@ export class MovieListComponent implements OnInit {
         this.api_call
             .DiscoverMovies('popularity.desc', '')
             .subscribe((res: DiscoverMovieResponse) => {
-                this.movies = res.results;
+                this.movies = this.excludeAdultMovies(res.results);
                 this.isLoading = false;
             });
     }
 
     /** Called by the search bar */
-    search(query: string, alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '') {
+    search(query: string, alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '', selectedCountry: string = '') {
         this.isLoading = true;
-        const obs = query.trim()
-            ? this.api_call.SearchMovies(query, selectedYear)
-            : this.api_call.DiscoverMovies(alphabeticSelect, selectedYear, selectedGenre);
+        const trimmedQuery = query.trim().toLowerCase();
+        const obs = selectedCountry
+            ? this.api_call.DiscoverMovies(alphabeticSelect, selectedYear, selectedGenre, selectedCountry)
+            : trimmedQuery
+                ? this.api_call.SearchMovies(query, selectedYear)
+                : this.api_call.DiscoverMovies(alphabeticSelect, selectedYear, selectedGenre);
 
         obs.subscribe({
             next: (res: DiscoverMovieResponse) => {
-                this.movies = res.results;
+                this.movies = this.excludeAdultMovies(res.results);
 
-                if (query.trim()) {
+                if (trimmedQuery) {
+                    if (selectedCountry) {
+                        this.movies = this.movies.filter(movie =>
+                            movie.title.toLowerCase().includes(trimmedQuery) ||
+                            movie.original_title.toLowerCase().includes(trimmedQuery)
+                        );
+                    }
+
                     if (alphabeticSelect !== 'popularity.desc') {
                         if (alphabeticSelect === 'title.asc') {
                             this.movies.sort((a, b) => a.title.localeCompare(b.title));

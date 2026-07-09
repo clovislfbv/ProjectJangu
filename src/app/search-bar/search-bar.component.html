@@ -45,6 +45,18 @@
       </select>
 
       <select
+        id="countrySelect"
+        class="form-select custom-select"
+        [(ngModel)]="selectedCountry"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="">All countries</option>
+        <option *ngFor="let country of countries" [value]="country.code">
+          {{ country.name }}
+        </option>
+      </select>
+
+      <select
         id="yearSelect"
         class="form-select custom-select"
         [(ngModel)]="selectedYear"

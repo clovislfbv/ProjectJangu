@@ -26,6 +26,7 @@ export interface Movie {
     backdrop_path: string;
     genre_ids: number[];
     id: number;
+    origin_country?: string[];
     original_language: string;
     original_title: string;
     overview: string;
@@ -71,6 +72,10 @@ export interface MovieVideosResponse {
 export interface MovieDetailsResponse {
     id: number;
     runtime: number | null;
+    production_countries?: Array<{
+        iso_3166_1: string;
+        name: string;
+    }>;
 }
 
 export interface MovieOverviewResponse {
@@ -415,18 +420,20 @@ export class ApiCallService {
         return tryAt(0);
     }
 
-    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = ''): Observable<DiscoverMovieResponse> {
+    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '', selectedCountry: string = ''): Observable<DiscoverMovieResponse> {
         const hasActiveFilters = Boolean(
             selectedYear ||
             selectedGenre ||
+            selectedCountry ||
             (alphabeticSelect && alphabeticSelect !== 'popularity.desc')
         );
         const yearParam = selectedYear ? `&primary_release_year=${encodeURIComponent(selectedYear)}` : '';
         const genreParam = selectedGenre ? `&with_genres=${encodeURIComponent(selectedGenre)}` : '';
+        const countryParam = selectedCountry ? `&with_origin_country=${encodeURIComponent(selectedCountry)}` : '';
         const sortParam = hasActiveFilters ? `&sort_by=${encodeURIComponent(alphabeticSelect || 'popularity.desc')}` : '';
 
         const urlForPage = (language: string, page: number) =>
-            this.buildMovieListUrlBase(language, page, hasActiveFilters) + yearParam + genreParam + sortParam;
+            this.buildMovieListUrlBase(language, page, hasActiveFilters) + yearParam + genreParam + countryParam + sortParam;
 
         // Page 1 first; if multiple pages exist, also load page 2 and append.
         // (No extra calls when there's only one page.)
@@ -458,12 +465,15 @@ export class ApiCallService {
         );
     }
 
-    SearchMovies(query: string, selectedYear: string = ''): Observable<DiscoverMovieResponse> {
+    SearchMovies(query: string, selectedYear: string = '', selectedCountry: string = ''): Observable<DiscoverMovieResponse> {
         return this.getWithLanguageFallback<DiscoverMovieResponse>(
             (language) => {
                 let url = this.buildSearchUrlBase(language) + encodeURIComponent(query);
                 if (selectedYear != "") {
                     url += `&primary_release_year=${selectedYear}`;
+                }
+                if (selectedCountry) {
+                    url += `&region=${encodeURIComponent(selectedCountry)}`;
                 }
                 return url;
             },

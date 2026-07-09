@@ -16,6 +16,7 @@ export class SearchBarComponent implements OnInit {
         alphabetic: string;
         year: string;
         genre: string;
+        country: string;
     }>();
 
     searchText: string = '';
@@ -26,6 +27,22 @@ export class SearchBarComponent implements OnInit {
     selectedAlphabetic: string = 'popularity.desc';
     selectedYear: string = '';
     selectedGenre: string = '';
+    selectedCountry: string = '';
+    countries = [
+        { code: 'US', name: 'United States' },
+        { code: 'FR', name: 'France' },
+        { code: 'GB', name: 'United Kingdom' },
+        { code: 'CA', name: 'Canada' },
+        { code: 'DE', name: 'Germany' },
+        { code: 'ES', name: 'Spain' },
+        { code: 'IT', name: 'Italy' },
+        { code: 'JP', name: 'Japan' },
+        { code: 'KR', name: 'South Korea' },
+        { code: 'IN', name: 'India' },
+        { code: 'CN', name: 'China' },
+        { code: 'BR', name: 'Brazil' },
+        { code: 'MX', name: 'Mexico' },
+    ];
 
     constructor(private apiCall: ApiCallService) {}
 
@@ -44,6 +61,7 @@ export class SearchBarComponent implements OnInit {
             alphabetic: this.selectedAlphabetic,
             year: this.selectedYear,
             genre: this.selectedGenre,
+            country: this.selectedCountry,
         });
 
         // Hide keyboard on mobile after search
@@ -66,6 +84,7 @@ export class SearchBarComponent implements OnInit {
             this.selectedAlphabetic = 'popularity.desc';
             this.selectedYear = '';
             this.selectedGenre = '';
+            this.selectedCountry = '';
             this.emitSearch();
         }
     }
@@ -80,6 +99,7 @@ export class SearchBarComponent implements OnInit {
             alphabetic: this.selectedAlphabetic,
             year: this.selectedYear,
             genre: this.selectedGenre,
+            country: this.selectedCountry,
         });
     }
 }
