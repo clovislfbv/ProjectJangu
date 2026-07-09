@@ -39,26 +39,30 @@ export class MovieListComponent implements OnInit {
             ? this.api_call.SearchMovies(query, selectedYear)
             : this.api_call.DiscoverMovies(alphabeticSelect, selectedYear, selectedGenre);
 
-        console.log(this.movies);
+        obs.subscribe({
+            next: (res: DiscoverMovieResponse) => {
+                this.movies = res.results;
 
-        obs.subscribe((res: DiscoverMovieResponse) => {
-            this.movies = res.results;
+                if (query.trim()) {
+                    if (alphabeticSelect !== 'popularity.desc') {
+                        if (alphabeticSelect === 'title.asc') {
+                            this.movies.sort((a, b) => a.title.localeCompare(b.title));
+                        } else if (alphabeticSelect === 'title.desc') {
+                            this.movies.sort((a, b) => b.title.localeCompare(a.title));
+                        }
+                    }
 
-            if (query.trim()) {
-                if (alphabeticSelect !== 'popularity.desc') {
-                    if (alphabeticSelect === 'title.asc') {
-                        this.movies.sort((a, b) => a.title.localeCompare(b.title));
-                    } else if (alphabeticSelect === 'title.desc') {
-                        this.movies.sort((a, b) => b.title.localeCompare(a.title));
+                    if (selectedGenre) {
+                        this.movies = this.movies.filter(movie => movie.genre_ids.includes(parseInt(selectedGenre, 10)));
                     }
                 }
 
-                if (selectedGenre) {
-                    this.movies = this.movies.filter(movie => movie.genre_ids.includes(parseInt(selectedGenre)));
-                }
-            }
-            
-            this.isLoading = false;
+                this.isLoading = false;
+            },
+            error: () => {
+                this.movies = [];
+                this.isLoading = false;
+            },
         });
     }
 

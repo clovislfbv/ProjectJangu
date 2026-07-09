@@ -39,12 +39,6 @@ export class SearchBarComponent implements OnInit {
     }
 
     onSearch(inputElement?: HTMLInputElement): void {
-        if (this.isFirstClick) {
-            this.selectedAlphabetic = 'popularity.desc';
-            this.selectedYear = '';
-            this.selectedGenre = '';
-        }
-
         this.search.emit({
             query: this.searchText,
             alphabetic: this.selectedAlphabetic,
@@ -67,5 +61,25 @@ export class SearchBarComponent implements OnInit {
 
     toggleFilters(): void {
         this.isFirstClick = !this.isFirstClick;
+
+        if (this.isFirstClick) {
+            this.selectedAlphabetic = 'popularity.desc';
+            this.selectedYear = '';
+            this.selectedGenre = '';
+            this.emitSearch();
+        }
+    }
+
+    onFilterChange(): void {
+        this.emitSearch();
+    }
+
+    private emitSearch(): void {
+        this.search.emit({
+            query: this.searchText,
+            alphabetic: this.selectedAlphabetic,
+            year: this.selectedYear,
+            genre: this.selectedGenre,
+        });
     }
 }

@@ -152,9 +152,6 @@ export class ApiCallService {
         Authorization: `Bearer ${api_key}`,
     });
 
-    private date = "";
-    private genre = "";
-
     constructor(private http: HttpClient) {}
 
     private watchmodeSourceMetaCache?: Record<number, WatchmodeSourceMeta>;
@@ -353,10 +350,11 @@ export class ApiCallService {
         );
     }
 
-    private buildDiscoverUrlBase(language: string, page: number = 1): string {
+    private buildMovieListUrlBase(language: string, page: number = 1, hasActiveFilters: boolean = false): string {
         const region = this.getUserRegion();
         const regionParam = region ? `&region=${region}` : '';
-        return `${this.tmdbBaseUrl}/movie/now_playing?include_adult=false&include_video=false&language=${language}&page=${page}${regionParam}`;
+        const endpoint = hasActiveFilters ? 'discover/movie' : 'movie/now_playing';
+        return `${this.tmdbBaseUrl}/${endpoint}?include_adult=false&include_video=false&language=${language}&page=${page}${regionParam}`;
     }
 
     private buildSearchUrlBase(language: string): string {
@@ -417,21 +415,18 @@ export class ApiCallService {
         return tryAt(0);
     }
 
-    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear : string = '', selectedGenre: string = ''): Observable<DiscoverMovieResponse> {
-        if (selectedYear != "") {
-            this.date = `&primary_release_year=${selectedYear}`;
-        } else {
-            this.date = "";
-        }
-
-        if (selectedGenre != "") {
-            this.genre = `&with_genres=${selectedGenre}`;
-        } else {
-            this.genre = "";
-        }
+    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = ''): Observable<DiscoverMovieResponse> {
+        const hasActiveFilters = Boolean(
+            selectedYear ||
+            selectedGenre ||
+            (alphabeticSelect && alphabeticSelect !== 'popularity.desc')
+        );
+        const yearParam = selectedYear ? `&primary_release_year=${encodeURIComponent(selectedYear)}` : '';
+        const genreParam = selectedGenre ? `&with_genres=${encodeURIComponent(selectedGenre)}` : '';
+        const sortParam = hasActiveFilters ? `&sort_by=${encodeURIComponent(alphabeticSelect || 'popularity.desc')}` : '';
 
         const urlForPage = (language: string, page: number) =>
-            this.buildDiscoverUrlBase(language, page) + this.date + this.genre + `&sort_by=${alphabeticSelect}`;
+            this.buildMovieListUrlBase(language, page, hasActiveFilters) + yearParam + genreParam + sortParam;
 
         // Page 1 first; if multiple pages exist, also load page 2 and append.
         // (No extra calls when there's only one page.)

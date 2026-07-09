@@ -36,6 +36,7 @@
         id="genre"
         class="form-select custom-select"
         [(ngModel)]="selectedGenre"
+        (ngModelChange)="onFilterChange()"
       >
         <option value="">All genres</option>
         <option *ngFor="let genre of genres" [value]="genre.id">
@@ -47,6 +48,7 @@
         id="yearSelect"
         class="form-select custom-select"
         [(ngModel)]="selectedYear"
+        (ngModelChange)="onFilterChange()"
       >
         <option value="">All years</option>
         <option *ngFor="let year of years" [value]="year">
@@ -59,6 +61,7 @@
         id="alphabeticSelect"
         class="form-select custom-select"
         [(ngModel)]="selectedAlphabetic"
+        (ngModelChange)="onFilterChange()"
       >
         <option value="popularity.desc">Default</option>
         <option value="title.asc">A → Z</option>
