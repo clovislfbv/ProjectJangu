@@ -1,2 +1,10 @@
-export const api_key = 'YOUR_TMDB_KEY';
-export const youtube_key = "YOUR_YOUTUBE_KEY";
+export const environment = {
+    production: false,
+    api_key: '',
+    youtube_key: '',
+    watchmode_api_key: '',
+};
+
+export const api_key = environment.api_key;
+export const youtube_key = environment.youtube_key;
+export const watchmode_api_key = environment.watchmode_api_key;

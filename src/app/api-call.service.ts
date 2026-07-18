@@ -459,11 +459,8 @@ export class ApiCallService {
             : '';
 
         const urlForPage = (language: string, page: number) => {
-            const region = this.getUserRegion();
-            const regionParam = region ? `&region=${encodeURIComponent(region)}` : '';
-
             if (!hasActiveFilters) {
-                return `${this.tmdbBaseUrl}/movie/now_playing?language=${encodeURIComponent(language)}&page=${page}${regionParam}`;
+                return `${this.tmdbBaseUrl}/movie/now_playing?language=${encodeURIComponent(language)}&page=${page}`;
             }
 
             return (
@@ -678,7 +675,7 @@ export class ApiCallService {
     }
 
     getYouTubeVideoStats(videoId: string): Observable<any> {
-        const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${youtube_key}&part=statistics`;
+        const url = `https://www.googleapis.com/youtube/v3/videos?id=${encodeURIComponent(videoId)}&key=${youtube_key}&part=statistics`;
         return this.http.get(url);
     }
 }

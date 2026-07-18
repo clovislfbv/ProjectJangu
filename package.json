@@ -3,12 +3,11 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "build:gh-pages": "ng build --output-path=dist/ProjectJangu --base-href \"/ProjectJangu/\"",
-    "deploy:gh-pages": "gh-pages -d dist/ProjectJangu/browser",
+"build": "npm run generate-env && ng build",
+"build:gh-pages": "npm run generate-env && ng build --output-path=dist/ProjectJangu --base-href \"/ProjectJangu/\"",
     "deploy": "ng deploy",
     "deploy:full": "npm run build:gh-pages && npm run deploy:gh-pages",
+    "generate-env": "node scripts/generate-env.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
