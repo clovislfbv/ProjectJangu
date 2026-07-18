@@ -8,11 +8,12 @@
     "build:cloudflare": "npm run build",
     "build:gh-pages": "npm run generate-env && ng build --output-path=dist/ProjectJangu --base-href \"/ProjectJangu/\"",
     "deploy:gh-pages": "gh-pages -d dist/ProjectJangu/browser",
-    "deploy": "ng deploy",
+    "deploy": "npm run build && wrangler deploy",
     "deploy:full": "npm run build:gh-pages && npm run deploy:gh-pages",
     "generate-env": "node scripts/generate-env.js",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "preview": "npm run build && wrangler dev"
   },
   "private": true,
   "dependencies": {
@@ -46,6 +47,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "wrangler": "^4.112.0"
   }
 }
