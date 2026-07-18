@@ -185,10 +185,12 @@ export class ApiCallService {
     }
 
     private getUserLanguageTag(): string {
-        const navLanguages = (typeof navigator !== 'undefined' && Array.isArray((navigator as any).languages))
-            ? (navigator as any).languages as string[]
-            : [];
-        const navLang = (typeof navigator !== 'undefined' && navigator.language) ? navigator.language : '';
+        const navLanguages =
+            typeof navigator !== 'undefined' && Array.isArray((navigator as any).languages)
+                ? ((navigator as any).languages as string[])
+                : [];
+        const navLang =
+            typeof navigator !== 'undefined' && navigator.language ? navigator.language : '';
         const candidate = navLanguages[0] || navLang || 'en-US';
         return this.normalizeLanguageTag(candidate);
     }
@@ -200,20 +202,23 @@ export class ApiCallService {
             return region;
         };
 
-        const navLang = (typeof navigator !== 'undefined' && navigator.language) ? navigator.language : '';
+        const navLang =
+            typeof navigator !== 'undefined' && navigator.language ? navigator.language : '';
         const regionFromNavigator = fromTag(navLang);
         if (regionFromNavigator) return regionFromNavigator;
 
-        const localeFromIntl = (typeof Intl !== 'undefined' && Intl.DateTimeFormat)
-            ? Intl.DateTimeFormat().resolvedOptions().locale
-            : '';
+        const localeFromIntl =
+            typeof Intl !== 'undefined' && Intl.DateTimeFormat
+                ? Intl.DateTimeFormat().resolvedOptions().locale
+                : '';
         const regionFromIntl = fromTag(localeFromIntl);
         if (regionFromIntl) return regionFromIntl;
 
         // Very small best-effort fallback (kept minimal):
-        const timeZone = (typeof Intl !== 'undefined' && Intl.DateTimeFormat)
-            ? Intl.DateTimeFormat().resolvedOptions().timeZone
-            : '';
+        const timeZone =
+            typeof Intl !== 'undefined' && Intl.DateTimeFormat
+                ? Intl.DateTimeFormat().resolvedOptions().timeZone
+                : '';
         if (timeZone === 'Europe/Paris') return 'FR';
 
         return undefined;
@@ -243,8 +248,11 @@ export class ApiCallService {
         if (orig) {
             const normalizedOrig = this.normalizeLanguageTag(orig);
             const origBaseLang = normalizedOrig.split('-')[0];
-            const localizedOrig = userRegion ? this.normalizeLanguageTag(`${origBaseLang}-${userRegion}`) : origBaseLang;
-            if (localizedOrig && !candidates.includes(localizedOrig)) candidates.push(localizedOrig);
+            const localizedOrig = userRegion
+                ? this.normalizeLanguageTag(`${origBaseLang}-${userRegion}`)
+                : origBaseLang;
+            if (localizedOrig && !candidates.includes(localizedOrig))
+                candidates.push(localizedOrig);
         }
 
         if (!candidates.includes('en-US')) candidates.push('en-US');
@@ -269,28 +277,30 @@ export class ApiCallService {
             catchError(() => {
                 // If Watchmode is unavailable, keep the app functioning.
                 return of({} as Record<number, WatchmodeSourceMeta>);
-            }),
+            })
         );
     }
 
     private getWatchmodeTitleIdFromTmdbMovieId(tmdbMovieId: number): Observable<number | null> {
-        const url = `${this.watchmodeBaseUrl}/search/?apiKey=${encodeURIComponent(this.watchmodeApiKey)}`
-            + `&search_field=tmdb_movie_id&search_value=${encodeURIComponent(String(tmdbMovieId))}&types=movie`;
+        const url =
+            `${this.watchmodeBaseUrl}/search/?apiKey=${encodeURIComponent(this.watchmodeApiKey)}` +
+            `&search_field=tmdb_movie_id&search_value=${encodeURIComponent(String(tmdbMovieId))}&types=movie`;
         return this.http.get<WatchmodeSearchResponse>(url).pipe(
             switchMap((res) => {
                 const first = res?.title_results?.[0];
                 return of(typeof first?.id === 'number' ? first.id : null);
             }),
-            catchError(() => of(null)),
+            catchError(() => of(null))
         );
     }
 
-    private getWatchmodeTitleSources(watchmodeTitleId: number, region?: string): Observable<WatchmodeTitleSource[]> {
+    private getWatchmodeTitleSources(
+        watchmodeTitleId: number,
+        region?: string
+    ): Observable<WatchmodeTitleSource[]> {
         const regionsParam = region ? `&regions=${encodeURIComponent(region)}` : '';
         const url = `${this.watchmodeBaseUrl}/title/${encodeURIComponent(String(watchmodeTitleId))}/sources/?apiKey=${encodeURIComponent(this.watchmodeApiKey)}${regionsParam}`;
-        return this.http.get<WatchmodeTitleSource[]>(url).pipe(
-            catchError(() => of([])),
-        );
+        return this.http.get<WatchmodeTitleSource[]>(url).pipe(catchError(() => of([])));
     }
 
     getStreamingLinksForTmdbMovie(tmdbMovieId: number): Observable<StreamingLink[]> {
@@ -310,7 +320,7 @@ export class ApiCallService {
                                 return of(withWeb);
                             }
                             return tryRegionAt(idx + 1);
-                        }),
+                        })
                     );
                 };
 
@@ -320,7 +330,13 @@ export class ApiCallService {
                 this.getWatchmodeSourceMetaMap().pipe(
                     switchMap((metaMap) => {
                         // Prefer subscription offers; keep others after.
-                        const order: Record<string, number> = { sub: 0, free: 1, rent: 2, buy: 3, tve: 4 };
+                        const order: Record<string, number> = {
+                            sub: 0,
+                            free: 1,
+                            rent: 2,
+                            buy: 3,
+                            tve: 4,
+                        };
                         const uniqueBySource: Record<number, WatchmodeTitleSource> = {};
                         for (const s of sources || []) {
                             if (!s?.source_id || !s?.web_url) continue;
@@ -349,17 +365,16 @@ export class ApiCallService {
 
                         links.sort((a, b) => (order[a.type] ?? 99) - (order[b.type] ?? 99));
                         return of(links);
-                    }),
+                    })
                 )
-            ),
+            )
         );
     }
 
-    private buildMovieListUrlBase(language: string, page: number = 1, hasActiveFilters: boolean = false): string {
+    private buildMovieListUrlBase(language: string, page: number = 1): string {
         const region = this.getUserRegion();
         const regionParam = region ? `&region=${region}` : '';
-        const endpoint = hasActiveFilters ? 'discover/movie' : 'movie/now_playing';
-        return `${this.tmdbBaseUrl}/${endpoint}?include_adult=false&include_video=false&language=${language}&page=${page}${regionParam}`;
+        return `${this.tmdbBaseUrl}/discover/movie?include_adult=false&include_video=false&language=${language}&page=${page}${regionParam}&vote_average.gte=1&vote_average.lte=9`;
     }
 
     private buildSearchUrlBase(language: string): string {
@@ -369,7 +384,7 @@ export class ApiCallService {
     private getWithLanguageFallback<T>(
         urlForLanguage: (language: string) => string,
         hasResults: (response: T) => boolean,
-        languages: string[],
+        languages: string[]
     ): Observable<T> {
         const tryAt = (index: number): Observable<T> => {
             const language = languages[index];
@@ -386,7 +401,7 @@ export class ApiCallService {
                         return tryAt(index + 1);
                     }
                     return throwError(() => error);
-                }),
+                })
             );
         };
 
@@ -396,7 +411,7 @@ export class ApiCallService {
     private getWithLanguageFallbackAndLanguage<T>(
         urlForLanguage: (language: string) => string,
         hasResults: (response: T) => boolean,
-        languages: string[],
+        languages: string[]
     ): Observable<{ language: string; response: T }> {
         const tryAt = (index: number): Observable<{ language: string; response: T }> => {
             const language = languages[index];
@@ -413,63 +428,110 @@ export class ApiCallService {
                         return tryAt(index + 1);
                     }
                     return throwError(() => error);
-                }),
+                })
             );
         };
 
         return tryAt(0);
     }
 
-    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '', selectedCountry: string = ''): Observable<DiscoverMovieResponse> {
+    DiscoverMovies(
+        alphabeticSelect: string = 'popularity.desc',
+        selectedYear: string = '',
+        selectedGenre: string = '',
+        selectedCountry: string = ''
+    ): Observable<DiscoverMovieResponse> {
         const hasActiveFilters = Boolean(
             selectedYear ||
             selectedGenre ||
             selectedCountry ||
             (alphabeticSelect && alphabeticSelect !== 'popularity.desc')
         );
-        const yearParam = selectedYear ? `&primary_release_year=${encodeURIComponent(selectedYear)}` : '';
+        const yearParam = selectedYear
+            ? `&primary_release_year=${encodeURIComponent(selectedYear)}`
+            : '';
         const genreParam = selectedGenre ? `&with_genres=${encodeURIComponent(selectedGenre)}` : '';
-        const countryParam = selectedCountry ? `&with_origin_country=${encodeURIComponent(selectedCountry)}` : '';
-        const sortParam = hasActiveFilters ? `&sort_by=${encodeURIComponent(alphabeticSelect || 'popularity.desc')}` : '';
+        const countryParam = selectedCountry
+            ? `&with_origin_country=${encodeURIComponent(selectedCountry)}`
+            : '';
+        const sortParam = hasActiveFilters
+            ? `&sort_by=${encodeURIComponent(alphabeticSelect || 'popularity.desc')}`
+            : '';
 
-        const urlForPage = (language: string, page: number) =>
-            this.buildMovieListUrlBase(language, page, hasActiveFilters) + yearParam + genreParam + countryParam + sortParam;
+        const urlForPage = (language: string, page: number) => {
+            const region = this.getUserRegion();
+            const regionParam = region ? `&region=${encodeURIComponent(region)}` : '';
+
+            if (!hasActiveFilters) {
+                return `${this.tmdbBaseUrl}/movie/now_playing?language=${encodeURIComponent(language)}&page=${page}${regionParam}`;
+            }
+
+            return (
+                this.buildMovieListUrlBase(language, page) +
+                yearParam +
+                genreParam +
+                countryParam +
+                sortParam
+            );
+        };
+
+        const filterMoviesByAverage = (response: DiscoverMovieResponse): DiscoverMovieResponse => ({
+            ...response,
+            results: (response?.results ?? []).filter(
+                (movie) => movie.vote_average >= 1 && movie.vote_average <= 9
+            ),
+        });
 
         // Page 1 first; if multiple pages exist, also load page 2 and append.
         // (No extra calls when there's only one page.)
         return this.getWithLanguageFallbackAndLanguage<DiscoverMovieResponse>(
             (language) => urlForPage(language, 1),
             (response) => Array.isArray(response?.results) && response.results.length > 0,
-            this.getLanguageFallbacks(),
+            this.getLanguageFallbacks()
         ).pipe(
             switchMap(({ language, response: page1 }) => {
                 const totalPages = page1?.total_pages ?? 0;
-                if (totalPages <= 1) return of(page1);
+                if (totalPages <= 1) {
+                    return of(hasActiveFilters ? page1 : filterMoviesByAverage(page1));
+                }
 
                 // Load page 2 only (if it exists) and append to page 1.
-                return this.http.get<DiscoverMovieResponse>(urlForPage(language, 2), { headers: this.headers }).pipe(
-                    map((page2) => {
-                        const mergedResults = [
-                            ...(page1?.results ?? []),
-                            ...(page2?.results ?? []),
-                        ];
-                        return {
-                            ...page1,
-                            results: mergedResults,
-                        };
-                    }),
-                    // If page 2 fails, keep page 1.
-                    catchError(() => of(page1)),
-                );
-            }),
+                return this.http
+                    .get<DiscoverMovieResponse>(urlForPage(language, 2), { headers: this.headers })
+                    .pipe(
+                        map((page2) => {
+                            const mergedResults = [
+                                ...(page1?.results ?? []),
+                                ...(page2?.results ?? []),
+                            ];
+                            const mergedResponse = {
+                                ...page1,
+                                results: mergedResults,
+                            };
+                            return hasActiveFilters
+                                ? mergedResponse
+                                : filterMoviesByAverage(mergedResponse);
+                        }),
+                        // If page 2 fails, keep page 1.
+                        catchError(() =>
+                            of(hasActiveFilters ? page1 : filterMoviesByAverage(page1))
+                        )
+                    );
+            })
         );
     }
 
-    SearchMovies(query: string, selectedYear: string = '', selectedCountry: string = ''): Observable<DiscoverMovieResponse> {
+    SearchMovies(
+        query: string,
+        selectedYear: string = '',
+        selectedCountry: string = ''
+    ): Observable<DiscoverMovieResponse> {
+        const normalizedQuery = query.trim().toLocaleLowerCase();
+
         return this.getWithLanguageFallback<DiscoverMovieResponse>(
             (language) => {
                 let url = this.buildSearchUrlBase(language) + encodeURIComponent(query);
-                if (selectedYear != "") {
+                if (selectedYear !== '') {
                     url += `&primary_release_year=${selectedYear}`;
                 }
                 if (selectedCountry) {
@@ -478,7 +540,29 @@ export class ApiCallService {
                 return url;
             },
             (response) => Array.isArray(response?.results) && response.results.length > 0,
-            this.getLanguageFallbacks(),
+            this.getLanguageFallbacks()
+        ).pipe(
+            map((response) => {
+                const results = response.results ?? [];
+                const exactMatches = results.filter((movie) =>
+                    [movie.title, movie.original_title].some(
+                        (title) => title?.trim().toLocaleLowerCase() === normalizedQuery
+                    )
+                );
+
+                if (exactMatches.length === 0) {
+                    return response;
+                }
+
+                const exactMatchIds = new Set(exactMatches.map((movie) => movie.id));
+                return {
+                    ...response,
+                    results: [
+                        ...exactMatches,
+                        ...results.filter((movie) => !exactMatchIds.has(movie.id)),
+                    ],
+                };
+            })
         );
     }
 
@@ -486,7 +570,7 @@ export class ApiCallService {
         return this.getWithLanguageFallback<GenreResponse>(
             (language) => `${this.tmdbBaseUrl}/genre/movie/list?language=${language}`,
             (response) => Array.isArray(response?.genres) && response.genres.length > 0,
-            this.getLanguageFallbacks(),
+            this.getLanguageFallbacks()
         );
     }
 
@@ -494,38 +578,51 @@ export class ApiCallService {
         return this.getWithLanguageFallback<MovieCreditsResponse>(
             (language) => `${this.tmdbBaseUrl}/movie/${movieId}/credits?language=${language}`,
             (response) => Array.isArray(response?.cast) && response.cast.length > 0,
-            this.getLanguageFallbacks(),
+            this.getLanguageFallbacks()
         );
     }
 
     getMovieVideos(movieId: number): Observable<MovieVideosResponse>;
     getMovieVideos(movieId: number, language: string): Observable<MovieVideosResponse>;
-    getMovieVideos(movieId: number, options: { originalLanguage?: string }): Observable<MovieVideosResponse>;
-    getMovieVideos(movieId: number, languageOrOptions?: string | { originalLanguage?: string }): Observable<MovieVideosResponse> {
+    getMovieVideos(
+        movieId: number,
+        options: { originalLanguage?: string }
+    ): Observable<MovieVideosResponse>;
+    getMovieVideos(
+        movieId: number,
+        languageOrOptions?: string | { originalLanguage?: string }
+    ): Observable<MovieVideosResponse> {
         if (typeof languageOrOptions === 'string' && languageOrOptions.trim()) {
             const language = this.normalizeLanguageTag(languageOrOptions);
             const url = `${this.tmdbBaseUrl}/movie/${movieId}/videos?language=${language}`;
             return this.http.get<MovieVideosResponse>(url, { headers: this.headers });
         }
 
-        const originalLanguage = (languageOrOptions && typeof languageOrOptions === 'object')
-            ? languageOrOptions.originalLanguage
-            : undefined;
+        const originalLanguage =
+            languageOrOptions && typeof languageOrOptions === 'object'
+                ? languageOrOptions.originalLanguage
+                : undefined;
 
         return this.getWithLanguageFallback<MovieVideosResponse>(
             (lang) => `${this.tmdbBaseUrl}/movie/${movieId}/videos?language=${lang}`,
             (response) => Array.isArray(response?.results) && response.results.length > 0,
-            this.getLanguageFallbacks(originalLanguage),
+            this.getLanguageFallbacks(originalLanguage)
         );
     }
 
     getMovieDetails(movieId: number): Observable<MovieDetailsResponse>;
-    getMovieDetails(movieId: number, options: { originalLanguage?: string }): Observable<MovieDetailsResponse>;
-    getMovieDetails(movieId: number, options?: { originalLanguage?: string }): Observable<MovieDetailsResponse> {
+    getMovieDetails(
+        movieId: number,
+        options: { originalLanguage?: string }
+    ): Observable<MovieDetailsResponse>;
+    getMovieDetails(
+        movieId: number,
+        options?: { originalLanguage?: string }
+    ): Observable<MovieDetailsResponse> {
         return this.getWithLanguageFallback<MovieDetailsResponse>(
             (language) => `${this.tmdbBaseUrl}/movie/${movieId}?language=${language}`,
             (response) => response != null && response.runtime != null,
-            this.getLanguageFallbacks(options?.originalLanguage),
+            this.getLanguageFallbacks(options?.originalLanguage)
         );
     }
 
@@ -539,7 +636,7 @@ export class ApiCallService {
                 switchMap((res) => {
                     const overview = (res?.overview ?? '').trim();
                     return of(overview.length > 0 ? overview : null);
-                }),
+                })
             );
         };
 
@@ -549,14 +646,14 @@ export class ApiCallService {
             catchError(() => of(null)),
             switchMap((overview) => {
                 if (overview) return of(overview);
-                return fetchOverview(fallbackLanguage).pipe(
-                    catchError(() => of(null)),
-                );
-            }),
+                return fetchOverview(fallbackLanguage).pipe(catchError(() => of(null)));
+            })
         );
     }
 
-    getMovieWatchProviders(movieId: number): Observable<{ providers: WatchProvider[]; link?: string; region: string }> {
+    getMovieWatchProviders(
+        movieId: number
+    ): Observable<{ providers: WatchProvider[]; link?: string; region: string }> {
         const url = `${this.tmdbBaseUrl}/movie/${movieId}/watch/providers`;
         const preferredRegion = this.getUserRegion() ?? 'US';
         const regionFallbacks = preferredRegion === 'US' ? ['US'] : [preferredRegion, 'US'];
@@ -571,8 +668,12 @@ export class ApiCallService {
                         return of({ providers, link: entry?.link, region });
                     }
                 }
-                return of({ providers: [], link: results[preferredRegion]?.link, region: preferredRegion });
-            }),
+                return of({
+                    providers: [],
+                    link: results[preferredRegion]?.link,
+                    region: preferredRegion,
+                });
+            })
         );
     }
 

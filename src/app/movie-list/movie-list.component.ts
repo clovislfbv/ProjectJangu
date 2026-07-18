@@ -18,8 +18,10 @@ export class MovieListComponent implements OnInit {
 
     constructor(private api_call: ApiCallService) {}
 
-    private excludeAdultMovies(movies: Movie[]): Movie[] {
-        return (movies || []).filter(movie => !movie.adult);
+    private filterDisplayableMovies(movies: Movie[]): Movie[] {
+        return (movies || []).filter(
+            movie => movie.vote_average >= 1 && movie.vote_average <= 9
+        );
     }
 
     ngOnInit() {
@@ -31,7 +33,7 @@ export class MovieListComponent implements OnInit {
         this.api_call
             .DiscoverMovies('popularity.desc', '')
             .subscribe((res: DiscoverMovieResponse) => {
-                this.movies = this.excludeAdultMovies(res.results);
+                this.movies = this.filterDisplayableMovies(res.results);
                 this.isLoading = false;
             });
     }
@@ -48,7 +50,7 @@ export class MovieListComponent implements OnInit {
 
         obs.subscribe({
             next: (res: DiscoverMovieResponse) => {
-                this.movies = this.excludeAdultMovies(res.results);
+                this.movies = this.filterDisplayableMovies(res.results);
 
                 if (trimmedQuery) {
                     if (selectedCountry) {
