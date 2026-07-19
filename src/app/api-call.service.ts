@@ -441,6 +441,8 @@ export class ApiCallService {
         selectedGenre: string = '',
         selectedCountry: string = ''
     ): Observable<DiscoverMovieResponse> {
+        const region = this.getUserRegion();
+        const regionParam = region ? `&region=${encodeURIComponent(region)}` : '';
         const hasActiveFilters = Boolean(
             selectedYear ||
             selectedGenre ||
@@ -460,7 +462,7 @@ export class ApiCallService {
 
         const urlForPage = (language: string, page: number) => {
             if (!hasActiveFilters) {
-                return `${this.tmdbBaseUrl}/movie/now_playing?language=${encodeURIComponent(language)}&page=${page}`;
+                return `${this.tmdbBaseUrl}/movie/now_playing?language=${encodeURIComponent(language)}&page=${page}${regionParam}`;
             }
 
             return (
