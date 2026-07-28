@@ -7,8 +7,17 @@
       (select)="onSelect(movie)"
     ></app-movie>
     
+    <!-- API/configuration error message -->
+    <div *ngIf="loadError && !isLoading" class="no-movies-message" role="alert">
+      <div class="no-movies-content">
+        <i class="no-movies-icon">⚠️</i>
+        <h3>Erreur de chargement</h3>
+        <p>{{ loadError }}</p>
+      </div>
+    </div>
+
     <!-- No movies found message -->
-    <div *ngIf="movies.length === 0 && !isLoading" class="no-movies-message">
+    <div *ngIf="movies.length === 0 && !isLoading && !loadError" class="no-movies-message">
       <div class="no-movies-content">
         <i class="no-movies-icon">🎬</i>
         <h3>No movies found</h3>

@@ -62,6 +62,20 @@ npx wrangler secret put YOUTUBE_API_KEY
 npx wrangler secret put WATCHMODE_API_KEY
 ```
 
+> `.env` is only a local file: Cloudflare does **not** upload its values as
+> production secrets. Run the three `wrangler secret put` commands for the
+> same Worker/account used by the deployment. This project requires Node.js
+> 22 or newer for its installed Wrangler version.
+
+You can verify that the production TMDB proxy responds after deployment:
+
+```bash
+curl -i "https://YOUR_WORKER_DOMAIN/api/tmdb/3/movie/now_playing?language=fr-FR&page=1"
+```
+
+A `500` response mentioning `Missing Cloudflare secret: TMDB_BEARER_TOKEN`
+means that the TMDB secret has not been configured on the deployed Worker.
+
 Then deploy the Angular assets and Worker together:
 
 ```bash

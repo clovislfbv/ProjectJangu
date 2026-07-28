@@ -24,6 +24,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     movies: Movie[] = [];
     selectedMovie: Movie | null = null;
     isLoading: boolean = true;
+    loadError: string | null = null;
     private currentPage = 0;
     private totalPages = 1;
     private requestGeneration = 0;
@@ -70,6 +71,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     private resetAndLoad(): void {
         this.requestGeneration++;
         this.movies = [];
+        this.loadError = null;
         this.currentPage = 0;
         this.totalPages = 1;
         this.isLoading = false;
@@ -86,6 +88,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         const currentYear = new Date().getFullYear().toString();
         const effectiveYear = country && !year ? currentYear : year;
         this.isLoading = true;
+        this.loadError = null;
         const request = country
             ? this.api_call.DiscoverMovies(alphabetic, effectiveYear, genre, country, page)
             : trimmedQuery
@@ -116,8 +119,16 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.totalPages = Math.max(this.currentPage, res.total_pages || 1);
                 this.isLoading = false;
             },
-            error: () => {
-                if (generation === this.requestGeneration) this.isLoading = false;
+            error: (error) => {
+                if (generation === this.requestGeneration) {
+                    this.isLoading = false;
+                    const apiMessage = typeof error?.error?.error === 'string'
+                        ? error.error.error
+                        : null;
+                    this.loadError = apiMessage
+                        ?? `Impossible de charger les films (erreur HTTP ${error?.status || 'inconnue'}).`;
+                    console.error('Movie API request failed', error);
+                }
             },
         });
     }
