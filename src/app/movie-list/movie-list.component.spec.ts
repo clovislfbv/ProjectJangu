@@ -21,8 +21,15 @@ describe('MovieListComponent', () => {
     });
 
     beforeEach(async () => {
-        apiCall = jasmine.createSpyObj<ApiCallService>('ApiCallService', ['DiscoverMovies', 'SearchMovies']);
+        apiCall = jasmine.createSpyObj<ApiCallService>('ApiCallService', [
+            'DiscoverMovies',
+            'SearchMovies',
+            'excludeEroticMovies',
+            'excludeMoviesShorterThan',
+        ]);
         apiCall.DiscoverMovies.and.returnValue(of(response(1, 3, [movie(1)])));
+        apiCall.excludeEroticMovies.and.callFake((movies: Movie[]) => of(movies));
+        apiCall.excludeMoviesShorterThan.and.callFake((movies: Movie[]) => of(movies));
 
         await TestBed.configureTestingModule({
             imports: [MovieListComponent],
@@ -45,6 +52,16 @@ describe('MovieListComponent', () => {
 
         expect(component.movies.map(({ id }) => id)).toEqual([1, 2, 3]);
         expect(apiCall.DiscoverMovies.calls.allArgs().map(args => args[4])).toEqual([1, 2, 3]);
+        expect(apiCall.excludeEroticMovies.calls.allArgs()).toEqual([
+            [[movie(1)]],
+            [[movie(2)]],
+            [[movie(3)]],
+        ]);
+        expect(apiCall.excludeMoviesShorterThan.calls.allArgs()).toEqual([
+            [[movie(1)], 50],
+            [[movie(2)], 50],
+            [[movie(3)], 50],
+        ]);
     });
 
     it('does not request a page after the last available page', () => {
@@ -63,5 +80,38 @@ describe('MovieListComponent', () => {
 
         expect(component.movies.map(({ id }) => id)).toEqual([10]);
         expect(apiCall.SearchMovies).toHaveBeenCalledWith('matrix', '', '', 1);
+    });
+
+    it('does not apply the current year by default when filtering by country', () => {
+        apiCall.DiscoverMovies.and.returnValue(of(response(1, 1, [movie(20)])));
+
+        component.search('', 'popularity.desc', '', '', 'FR');
+
+        expect(apiCall.DiscoverMovies).toHaveBeenCalledWith('popularity.desc', '', '', 'FR', 1);
+    });
+
+    it('checks TMDB keywords to exclude erotic movies', () => {
+        apiCall.DiscoverMovies.and.returnValue(of(response(1, 1, [movie(30)])));
+
+        component.search('', 'popularity.desc', '', '', 'FR');
+
+        expect(apiCall.excludeEroticMovies).toHaveBeenCalledWith([movie(30)]);
+    });
+
+    it('filters every page when filters are active', () => {
+        apiCall.DiscoverMovies.and.returnValues(
+            of(response(1, 2, [movie(40)])),
+            of(response(2, 2, [movie(41)])),
+        );
+        apiCall.excludeEroticMovies.calls.reset();
+
+        component.search('', 'title.asc', '', '18', 'FR');
+        component.loadNextPage();
+
+        expect(apiCall.excludeEroticMovies.calls.allArgs()).toEqual([
+            [[movie(40)]],
+            [[movie(41)]],
+        ]);
+        expect(apiCall.excludeMoviesShorterThan).not.toHaveBeenCalled();
     });
 });

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 export interface CastMember {
     cast_id: number;
     character: string;
@@ -74,6 +74,11 @@ export interface MovieDetailsResponse {
         iso_3166_1: string;
         name: string;
     }>;
+}
+
+interface MovieKeywordsResponse {
+    id: number;
+    keywords: Array<{ id: number; name: string }>;
 }
 
 export interface MovieOverviewResponse {
@@ -153,6 +158,109 @@ export class ApiCallService {
     constructor(private http: HttpClient) {}
 
     private watchmodeSourceMetaCache?: Record<number, WatchmodeSourceMeta>;
+
+    private hasEroticKeywords(movieId: number): Observable<boolean> {
+        const url = `${this.tmdbBaseUrl}/movie/${movieId}/keywords`;
+        const eroticKeywords = new Set([
+            'erotic', 'erotica', 'erotic movie', 'softcore', 'softcore porn',
+            'pornography', 'pornographic film', 'sexploitation', 'adult film',
+            'explicit sex', 'sexual exploration', 'sexual relationship',
+            'sexual awakening', 'unsimulated sex', 'graphic sex',
+        ]);
+
+        return this.http.get<MovieKeywordsResponse>(url).pipe(
+            map((response) => {
+                return (response?.keywords ?? []).some(keyword =>
+                    eroticKeywords.has((keyword.name ?? '').trim().toLowerCase())
+                );
+            }),
+            // Missing keyword data must not remove the movie.
+            catchError(() => of(false)),
+        );
+    }
+
+    private isKnownEroticMovie(movie: Movie): boolean {
+        const normalizeTitle = (title: string): string => title
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .toLowerCase();
+        const releaseYear = (movie.release_date ?? '').slice(0, 4);
+        const titles = [movie.title, movie.original_title].map(normalizeTitle);
+
+        const knownEroticMovies: Record<string, string[]> = {
+            '2000': ['baise-moi', 'rape me'],
+            '2001': ['intimite', 'intimacy'],
+            '2005': ['comme un frere'],
+        };
+
+        return (knownEroticMovies[releaseYear] ?? []).some(title => titles.includes(title));
+    }
+
+    private hasEroticTitleOrOverview(movie: Movie): boolean {
+        const normalize = (value: string): string => value
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+        const title = normalize(`${movie.title ?? ''} ${movie.original_title ?? ''}`);
+        const overview = normalize(movie.overview ?? '');
+        const text = `${title} ${overview}`;
+
+        if (title.includes('i want your sex')) return true;
+
+        const explicitPhrases = [
+            'chroniques sexuelles', 'sexual chronicles', 'sexual chronicle',
+            'film erotique', 'erotic film', 'erotic movie', 'sexual exploration',
+            'exploration sexuelle', 'sexual awakening', 'eveil sexuel',
+            'sexual relationship', 'relations sexuelles', 'explicit sex',
+            'sexe explicite', 'unsimulated sex', 'sexe non simule',
+            'graphic sex', 'scenes sexuelles explicites', 'softcore',
+            'pornograph', 'sexploitation',
+        ];
+        if (explicitPhrases.some(phrase => text.includes(phrase))) return true;
+
+        const centralityTerms = [
+            'sexualite', 'sexuality', 'desirs sexuels', 'sexual desires',
+            'vie sexuelle', 'sex life', 'experiences sexuelles', 'sexual experiences',
+        ];
+        const focusTerms = [
+            'explore', 'explores', 'explorent', 'decouvre', 'discover',
+            'initiation', 'chronique', 'chronicles', 'centré', 'centered',
+        ];
+
+        return centralityTerms.some(term => text.includes(term))
+            && focusTerms.some(term => text.includes(term));
+    }
+
+    excludeEroticMovies(movies: Movie[]): Observable<Movie[]> {
+        if (!movies.length) return of([]);
+
+        return forkJoin(movies.map(movie =>
+            (this.isKnownEroticMovie(movie) || this.hasEroticTitleOrOverview(movie)
+                ? of(true)
+                : this.hasEroticKeywords(movie.id)).pipe(
+                map(isErotic => ({ movie, isErotic })),
+            )
+        )).pipe(
+            map(results => results.filter(result => !result.isErotic).map(result => result.movie)),
+        );
+    }
+
+    excludeMoviesShorterThan(movies: Movie[], minimumRuntime: number): Observable<Movie[]> {
+        if (!movies.length) return of([]);
+
+        return forkJoin(movies.map(movie =>
+            this.http.get<MovieDetailsResponse>(`${this.tmdbBaseUrl}/movie/${movie.id}`).pipe(
+                map(details => ({ movie, runtime: details?.runtime })),
+                // Unknown runtime must not remove an otherwise valid movie.
+                catchError(() => of({ movie, runtime: null })),
+            )
+        )).pipe(
+            map(results => results
+                .filter(({ runtime }) => runtime == null || runtime >= minimumRuntime)
+                .map(({ movie }) => movie)),
+        );
+    }
 
     private normalizeLanguageTag(tag: string): string {
         // Normalise loosely to BCP47-ish casing:
@@ -423,12 +531,14 @@ export class ApiCallService {
         const yearParam = selectedYear ? `&primary_release_year=${encodeURIComponent(selectedYear)}` : '';
         const genreParam = selectedGenre ? `&with_genres=${encodeURIComponent(selectedGenre)}` : '';
         const countryParam = selectedCountry ? `&with_origin_country=${encodeURIComponent(selectedCountry)}` : '';
-        const voteAverageParam = '&vote_average.gte=1&vote_average.lte=9';
+        // TMDB's lower runtime bound is inclusive, so 51 keeps only movies
+        // whose runtime is strictly greater than 50 minutes.
+        const runtimeParam = '&with_runtime.gte=51';
         const sortParam = hasActiveFilters ? `&sort_by=${encodeURIComponent(alphabeticSelect || 'popularity.desc')}` : '';
 
         return this.getWithLanguageFallback<DiscoverMovieResponse>(
             (language) => this.buildMovieListUrlBase(language, page, hasActiveFilters)
-                + yearParam + genreParam + countryParam + voteAverageParam + sortParam,
+                + yearParam + genreParam + countryParam + runtimeParam + sortParam,
             (response) => Array.isArray(response?.results) && response.results.length > 0,
             this.getLanguageFallbacks(),
         );

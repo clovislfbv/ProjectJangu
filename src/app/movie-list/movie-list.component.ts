@@ -3,6 +3,8 @@ import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { MovieComponent } from '../movie/movie.component';
 import { MovieDetailOverlayComponent } from '../movie-detail-overlay/movie-detail-overlay.component';
 import { ApiCallService, DiscoverMovieResponse, Movie } from '../api-call.service';
+import { map, switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 interface MovieListCriteria {
     query: string;
@@ -52,6 +54,15 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         return this.removeDuplicateMovies(this.excludeAdultMovies(movies));
     }
 
+    private filterResponsePage(res: DiscoverMovieResponse, isDefaultView: boolean): Observable<DiscoverMovieResponse> {
+        return this.api_call.excludeEroticMovies(res.results ?? []).pipe(
+            switchMap(results => isDefaultView
+                ? this.api_call.excludeMoviesShorterThan(results, 50)
+                : [results]),
+            map(results => ({ ...res, results })),
+        );
+    }
+
     ngOnInit() {
         this.resetAndLoad();
     }
@@ -85,17 +96,24 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         const page = this.currentPage + 1;
         const { query, alphabetic, year, genre, country } = this.criteria;
         const trimmedQuery = query.trim().toLowerCase();
-        const currentYear = new Date().getFullYear().toString();
-        const effectiveYear = country && !year ? currentYear : year;
+        const isDefaultView = !trimmedQuery
+            && !year
+            && !genre
+            && !country
+            && alphabetic === 'popularity.desc';
         this.isLoading = true;
         this.loadError = null;
         const request = country
-            ? this.api_call.DiscoverMovies(alphabetic, effectiveYear, genre, country, page)
+            ? this.api_call.DiscoverMovies(alphabetic, year, genre, country, page)
             : trimmedQuery
-                ? this.api_call.SearchMovies(query, effectiveYear, '', page)
-                : this.api_call.DiscoverMovies(alphabetic, effectiveYear, genre, '', page);
+                ? this.api_call.SearchMovies(query, year, '', page)
+                : this.api_call.DiscoverMovies(alphabetic, year, genre, '', page);
 
-        request.subscribe({
+        request.pipe(
+            // Every API page goes through the same content filter before it is appended,
+            // whether it comes from the default view, filters, or text search.
+            switchMap((res: DiscoverMovieResponse) => this.filterResponsePage(res, isDefaultView)),
+        ).subscribe({
             next: (res: DiscoverMovieResponse) => {
                 if (generation !== this.requestGeneration) return;
                 let pageMovies = this.prepareMoviesForDisplay(res.results);

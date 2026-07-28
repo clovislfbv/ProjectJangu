@@ -17,6 +17,14 @@ async function proxyApi(request, env, route) {
   upstreamUrl.pathname = incomingUrl.pathname.slice(route.prefix.length) || '/';
   upstreamUrl.search = incomingUrl.search;
 
+  if (route.prefix === '/api/tmdb' && [
+    '/3/discover/movie',
+    '/3/search/movie',
+    '/3/movie/now_playing',
+  ].includes(upstreamUrl.pathname)) {
+    upstreamUrl.searchParams.set('include_adult', 'false');
+  }
+
   const headers = new Headers(request.headers);
   headers.delete('host');
   headers.set('Accept', 'application/json');
