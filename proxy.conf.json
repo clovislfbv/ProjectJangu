@@ -1,0 +1,4 @@
+{
+  "deprecated": true,
+  "message": "Use proxy.conf.cjs. This JSON file intentionally contains no API keys."
+}

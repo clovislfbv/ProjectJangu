@@ -17,12 +17,14 @@
     </div>
     
     <!-- Loading message -->
-    <div *ngIf="isLoading" class="loading-message">
+    <div *ngIf="isLoading" class="loading-message" [class.loading-more]="movies.length > 0">
       <div class="loading-content">
         <div class="loading-spinner"></div>
         <p>Loading movies...</p>
       </div>
     </div>
+
+    <div #scrollSentinel class="scroll-sentinel" aria-hidden="true"></div>
   </div>
 
   <app-movie-detail-overlay

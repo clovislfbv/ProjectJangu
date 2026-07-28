@@ -168,6 +168,17 @@ app-movie {
     padding: 2rem;
 }
 
+.loading-message.loading-more {
+    min-height: 100px;
+    padding: 1rem;
+}
+
+.scroll-sentinel {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 1px;
+}
+
 .loading-content {
     text-align: center;
     color: #ccc;

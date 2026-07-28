@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { api_key, youtube_key, watchmode_api_key } from '../environments/environment';
-
+import { catchError, switchMap } from 'rxjs/operators';
 export interface CastMember {
     cast_id: number;
     character: string;
@@ -148,14 +146,9 @@ export interface StreamingLink {
     providedIn: 'root',
 })
 export class ApiCallService {
-    private readonly tmdbBaseUrl = 'https://api.themoviedb.org/3';
-    private readonly watchmodeBaseUrl = 'https://api.watchmode.com/v1';
-    private readonly watchmodeApiKey = watchmode_api_key;
-
-    private headers = new HttpHeaders({
-        accept: 'application/json',
-        Authorization: `Bearer ${api_key}`,
-    });
+    private readonly tmdbBaseUrl = '/api/tmdb/3';
+    private readonly watchmodeBaseUrl = '/api/watchmode/v1';
+    private readonly youtubeBaseUrl = '/api/youtube/v3';
 
     constructor(private http: HttpClient) {}
 
@@ -256,7 +249,7 @@ export class ApiCallService {
             return of(this.watchmodeSourceMetaCache);
         }
 
-        const url = `${this.watchmodeBaseUrl}/sources/?apiKey=${encodeURIComponent(this.watchmodeApiKey)}`;
+        const url = `${this.watchmodeBaseUrl}/sources`;
         return this.http.get<WatchmodeSourceMeta[]>(url).pipe(
             switchMap((sources) => {
                 const map: Record<number, WatchmodeSourceMeta> = {};
@@ -274,8 +267,8 @@ export class ApiCallService {
     }
 
     private getWatchmodeTitleIdFromTmdbMovieId(tmdbMovieId: number): Observable<number | null> {
-        const url = `${this.watchmodeBaseUrl}/search/?apiKey=${encodeURIComponent(this.watchmodeApiKey)}`
-            + `&search_field=tmdb_movie_id&search_value=${encodeURIComponent(String(tmdbMovieId))}&types=movie`;
+        const url = `${this.watchmodeBaseUrl}/search`
+            + `?search_field=tmdb_movie_id&search_value=${encodeURIComponent(String(tmdbMovieId))}&types=movie`;
         return this.http.get<WatchmodeSearchResponse>(url).pipe(
             switchMap((res) => {
                 const first = res?.title_results?.[0];
@@ -286,8 +279,8 @@ export class ApiCallService {
     }
 
     private getWatchmodeTitleSources(watchmodeTitleId: number, region?: string): Observable<WatchmodeTitleSource[]> {
-        const regionsParam = region ? `&regions=${encodeURIComponent(region)}` : '';
-        const url = `${this.watchmodeBaseUrl}/title/${encodeURIComponent(String(watchmodeTitleId))}/sources/?apiKey=${encodeURIComponent(this.watchmodeApiKey)}${regionsParam}`;
+        const regionsParam = region ? `?regions=${encodeURIComponent(region)}` : '';
+        const url = `${this.watchmodeBaseUrl}/title/${encodeURIComponent(String(watchmodeTitleId))}/sources${regionsParam}`;
         return this.http.get<WatchmodeTitleSource[]>(url).pipe(
             catchError(() => of([])),
         );
@@ -362,8 +355,8 @@ export class ApiCallService {
         return `${this.tmdbBaseUrl}/${endpoint}?include_adult=false&include_video=false&language=${language}&page=${page}${regionParam}`;
     }
 
-    private buildSearchUrlBase(language: string): string {
-        return `${this.tmdbBaseUrl}/search/movie?include_adult=false&language=${language}&page=1&query=`;
+    private buildSearchUrlBase(language: string, page: number = 1): string {
+        return `${this.tmdbBaseUrl}/search/movie?include_adult=false&language=${language}&page=${page}&query=`;
     }
 
     private getWithLanguageFallback<T>(
@@ -373,7 +366,7 @@ export class ApiCallService {
     ): Observable<T> {
         const tryAt = (index: number): Observable<T> => {
             const language = languages[index];
-            return this.http.get<T>(urlForLanguage(language), { headers: this.headers }).pipe(
+            return this.http.get<T>(urlForLanguage(language)).pipe(
                 switchMap((response) => {
                     const ok = hasResults(response);
                     if (ok || index >= languages.length - 1) {
@@ -400,7 +393,7 @@ export class ApiCallService {
     ): Observable<{ language: string; response: T }> {
         const tryAt = (index: number): Observable<{ language: string; response: T }> => {
             const language = languages[index];
-            return this.http.get<T>(urlForLanguage(language), { headers: this.headers }).pipe(
+            return this.http.get<T>(urlForLanguage(language)).pipe(
                 switchMap((response) => {
                     const ok = hasResults(response);
                     if (ok || index >= languages.length - 1) {
@@ -420,7 +413,7 @@ export class ApiCallService {
         return tryAt(0);
     }
 
-    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '', selectedCountry: string = ''): Observable<DiscoverMovieResponse> {
+    DiscoverMovies(alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '', selectedCountry: string = '', page: number = 1): Observable<DiscoverMovieResponse> {
         const hasActiveFilters = Boolean(
             selectedYear ||
             selectedGenre ||
@@ -430,45 +423,21 @@ export class ApiCallService {
         const yearParam = selectedYear ? `&primary_release_year=${encodeURIComponent(selectedYear)}` : '';
         const genreParam = selectedGenre ? `&with_genres=${encodeURIComponent(selectedGenre)}` : '';
         const countryParam = selectedCountry ? `&with_origin_country=${encodeURIComponent(selectedCountry)}` : '';
+        const voteAverageParam = '&vote_average.gte=1&vote_average.lte=9';
         const sortParam = hasActiveFilters ? `&sort_by=${encodeURIComponent(alphabeticSelect || 'popularity.desc')}` : '';
 
-        const urlForPage = (language: string, page: number) =>
-            this.buildMovieListUrlBase(language, page, hasActiveFilters) + yearParam + genreParam + countryParam + sortParam;
-
-        // Page 1 first; if multiple pages exist, also load page 2 and append.
-        // (No extra calls when there's only one page.)
-        return this.getWithLanguageFallbackAndLanguage<DiscoverMovieResponse>(
-            (language) => urlForPage(language, 1),
+        return this.getWithLanguageFallback<DiscoverMovieResponse>(
+            (language) => this.buildMovieListUrlBase(language, page, hasActiveFilters)
+                + yearParam + genreParam + countryParam + voteAverageParam + sortParam,
             (response) => Array.isArray(response?.results) && response.results.length > 0,
             this.getLanguageFallbacks(),
-        ).pipe(
-            switchMap(({ language, response: page1 }) => {
-                const totalPages = page1?.total_pages ?? 0;
-                if (totalPages <= 1) return of(page1);
-
-                // Load page 2 only (if it exists) and append to page 1.
-                return this.http.get<DiscoverMovieResponse>(urlForPage(language, 2), { headers: this.headers }).pipe(
-                    map((page2) => {
-                        const mergedResults = [
-                            ...(page1?.results ?? []),
-                            ...(page2?.results ?? []),
-                        ];
-                        return {
-                            ...page1,
-                            results: mergedResults,
-                        };
-                    }),
-                    // If page 2 fails, keep page 1.
-                    catchError(() => of(page1)),
-                );
-            }),
         );
     }
 
-    SearchMovies(query: string, selectedYear: string = '', selectedCountry: string = ''): Observable<DiscoverMovieResponse> {
+    SearchMovies(query: string, selectedYear: string = '', selectedCountry: string = '', page: number = 1): Observable<DiscoverMovieResponse> {
         return this.getWithLanguageFallback<DiscoverMovieResponse>(
             (language) => {
-                let url = this.buildSearchUrlBase(language) + encodeURIComponent(query);
+                let url = this.buildSearchUrlBase(language, page) + encodeURIComponent(query);
                 if (selectedYear != "") {
                     url += `&primary_release_year=${selectedYear}`;
                 }
@@ -505,7 +474,7 @@ export class ApiCallService {
         if (typeof languageOrOptions === 'string' && languageOrOptions.trim()) {
             const language = this.normalizeLanguageTag(languageOrOptions);
             const url = `${this.tmdbBaseUrl}/movie/${movieId}/videos?language=${language}`;
-            return this.http.get<MovieVideosResponse>(url, { headers: this.headers });
+            return this.http.get<MovieVideosResponse>(url);
         }
 
         const originalLanguage = (languageOrOptions && typeof languageOrOptions === 'object')
@@ -535,7 +504,7 @@ export class ApiCallService {
 
         const fetchOverview = (language: string): Observable<string | null> => {
             const url = `${this.tmdbBaseUrl}/movie/${movieId}?language=${encodeURIComponent(language)}`;
-            return this.http.get<MovieOverviewResponse>(url, { headers: this.headers }).pipe(
+            return this.http.get<MovieOverviewResponse>(url).pipe(
                 switchMap((res) => {
                     const overview = (res?.overview ?? '').trim();
                     return of(overview.length > 0 ? overview : null);
@@ -561,7 +530,7 @@ export class ApiCallService {
         const preferredRegion = this.getUserRegion() ?? 'US';
         const regionFallbacks = preferredRegion === 'US' ? ['US'] : [preferredRegion, 'US'];
 
-        return this.http.get<MovieWatchProvidersResponse>(url, { headers: this.headers }).pipe(
+        return this.http.get<MovieWatchProvidersResponse>(url).pipe(
             switchMap((response) => {
                 const results = response?.results ?? {};
                 for (const region of regionFallbacks) {
@@ -577,7 +546,9 @@ export class ApiCallService {
     }
 
     getYouTubeVideoStats(videoId: string): Observable<any> {
-        const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${youtube_key}&part=statistics`;
-        return this.http.get(url);
+        const url = `${this.youtubeBaseUrl}/videos?id=${encodeURIComponent(videoId)}&part=statistics`;
+        return this.http.get(url).pipe(
+            catchError(() => of(null)),
+        );
     }
 }
