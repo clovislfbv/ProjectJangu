@@ -49,24 +49,26 @@ WATCHMODE_API_KEY="your_watchmode_key" \
 npm run build
 ```
 
-### Cloudflare Pages
+### Cloudflare Workers
 
-In the Cloudflare dashboard, configure the Pages project with:
+The Angular application calls `/api/tmdb`, `/api/youtube`, and `/api/watchmode`.
+`worker/index.js` proxies these routes from Cloudflare so API credentials are not exposed in the browser bundle.
 
-- **Production branch:** `main`
-- **Build command:** `npm run build`
-- **Build output directory:** `dist/ProjectJangu/browser`
-- **Root directory:** leave empty unless this repository is used in a monorepo
+Configure the required Worker secrets once:
 
-Under **Settings > Environment variables**, define these variables for both Production and Preview deployments:
+```bash
+npx wrangler secret put TMDB_BEARER_TOKEN
+npx wrangler secret put YOUTUBE_API_KEY
+npx wrangler secret put WATCHMODE_API_KEY
+```
 
-- `TMDB_TOKEN`
-- `YOUTUBE_KEY`
-- `WATCHMODE_API_KEY`
+Then deploy the Angular assets and Worker together:
 
-Cloudflare injects these variables while running the build. The `generate-env` script writes them to the Angular environment file before `ng build` runs.
+```bash
+npm run deploy
+```
 
-If the generated output directory differs after an Angular upgrade, run `npm run build` locally and configure Cloudflare Pages to publish the directory containing the generated `index.html`.
+For a local Cloudflare preview, create a non-committed `.dev.vars` containing the same three variables, then run `npm run preview`.
 
 ### GitHub Pages
 
