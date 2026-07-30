@@ -81,7 +81,7 @@
         <div class="cast-section">
             <h2 class="overview-label">Cast</h2>
             <div *ngIf="cast.length > 0; else noCast" class="cast-list">
-                <div *ngFor="let actor of cast" class="cast-item">
+                <button *ngFor="let actor of cast" class="cast-item" type="button" (click)="selectActor.emit(actor)">
                     <img
                         class="cast-photo"
                         [src]="
@@ -95,7 +95,7 @@
                     <p class="actor-character">
                         {{ actor.character || 'NA' }}
                     </p>
-                </div>
+                </button>
             </div>
             <ng-template #noCast>
                 <p class="no-cast">NA</p>

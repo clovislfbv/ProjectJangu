@@ -2,9 +2,13 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } fr
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { MovieComponent } from '../movie/movie.component';
 import { MovieDetailOverlayComponent } from '../movie-detail-overlay/movie-detail-overlay.component';
-import { ApiCallService, DiscoverMovieResponse, Movie } from '../api-call.service';
+import { ApiCallService, DiscoverMovieResponse, Movie, PersonSearchResult } from '../api-call.service';
 import { map, switchMap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { PersonDetailOverlayComponent } from '../person-detail-overlay/person-detail-overlay.component';
+import { CastMember } from '../api-call.service';
 
 interface MovieListCriteria {
     query: string;
@@ -17,7 +21,7 @@ interface MovieListCriteria {
 @Component({
     selector: 'app-movie-list',
     standalone: true,
-    imports: [CommonModule, NgFor, NgIf, MovieComponent, MovieDetailOverlayComponent],
+    imports: [CommonModule, NgFor, NgIf, MovieComponent, MovieDetailOverlayComponent, PersonDetailOverlayComponent],
     templateUrl: './movie-list.component.html',
     styleUrls: ['./movie-list.component.css'],
 })
@@ -25,17 +29,24 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('scrollSentinel') scrollSentinel?: ElementRef<HTMLElement>;
     movies: Movie[] = [];
     selectedMovie: Movie | null = null;
+    selectedPersonId: number | null = null;
+    people: PersonSearchResult[] = [];
     isLoading: boolean = true;
     loadError: string | null = null;
     private currentPage = 0;
     private totalPages = 1;
     private requestGeneration = 0;
     private observer?: IntersectionObserver;
+    private movieLinkSubscription?: Subscription;
     private criteria: MovieListCriteria = {
         query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '',
     };
 
-    constructor(private api_call: ApiCallService) {}
+    constructor(
+        private api_call: ApiCallService,
+        private route: ActivatedRoute,
+        private router: Router,
+    ) {}
 
     private excludeAdultMovies(movies: Movie[]): Movie[] {
         return (movies || []).filter(movie => !movie.adult);
@@ -64,6 +75,33 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.movieLinkSubscription = this.route.queryParamMap.subscribe((params) => {
+            const rawMovieId = params.get('movie');
+            const rawActorId = params.get('actor');
+            const actorId = Number(rawActorId);
+            this.selectedPersonId = rawActorId && Number.isInteger(actorId) && actorId > 0 ? actorId : null;
+            if (!rawMovieId) {
+                if (!this.selectedPersonId) this.selectedMovie = null;
+                return;
+            }
+
+            const movieId = Number(rawMovieId);
+            if (!Number.isInteger(movieId) || movieId <= 0) {
+                this.closeMovie();
+                return;
+            }
+
+            const loadedMovie = this.movies.find(movie => movie.id === movieId);
+            if (loadedMovie) {
+                this.selectedMovie = loadedMovie;
+                return;
+            }
+
+            this.api_call.getMovieById(movieId).subscribe({
+                next: movie => this.selectedMovie = movie,
+                error: () => this.closeMovie(),
+            });
+        });
         this.resetAndLoad();
     }
 
@@ -77,6 +115,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.observer?.disconnect();
+        this.movieLinkSubscription?.unsubscribe();
     }
 
     private resetAndLoad(): void {
@@ -160,10 +199,74 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
             genre: selectedGenre,
             country: selectedCountry,
         };
+        this.people = [];
+        const trimmedQuery = query.trim();
+        if (trimmedQuery) {
+            this.api_call.SearchPersons(trimmedQuery).subscribe({
+                next: response => this.people = (response.results ?? [])
+                    .filter(person => person.known_for_department === 'Acting')
+                    .slice(0, 10),
+                error: () => this.people = [],
+            });
+        }
         this.resetAndLoad();
     }
 
     onSelect(movie: Movie) {
         this.selectedMovie = movie;
+        this.selectedPersonId = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { movie: movie.id, actor: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    closeMovie(): void {
+        this.selectedMovie = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { movie: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    openActor(actor: CastMember): void {
+        this.selectedPersonId = actor.id;
+        this.selectedMovie = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { actor: actor.id, movie: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    openPerson(person: PersonSearchResult): void {
+        this.selectedPersonId = person.id;
+        this.selectedMovie = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { actor: person.id, movie: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    closeActor(): void {
+        this.selectedPersonId = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { actor: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    openMovieFromActor(movieId: number): void {
+        this.closeActor();
+        const loadedMovie = this.movies.find(movie => movie.id === movieId);
+        if (loadedMovie) {
+            this.onSelect(loadedMovie);
+            return;
+        }
+        this.api_call.getMovieById(movieId).subscribe(movie => this.onSelect(movie));
     }
 }

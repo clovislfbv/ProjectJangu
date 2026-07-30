@@ -1,4 +1,20 @@
 <div class="movie-list">
+  <section *ngIf="people.length" class="people-results" aria-label="Profils d'acteurs">
+    <h2>Acteurs</h2>
+    <div class="people-list">
+      <button *ngFor="let person of people" class="person-result" type="button" (click)="openPerson(person)">
+        <img [src]="person.profile_path ? 'https://image.tmdb.org/t/p/w185' + person.profile_path : '/assets/placeholder-profile.png'" [alt]="person.name">
+        <span class="person-result-info">
+          <strong>{{ person.name }}</strong>
+          <small *ngIf="person.known_for.length">
+            {{ person.known_for[0].title || person.known_for[0].name }}
+            <ng-container *ngIf="person.known_for[1]"> · {{ person.known_for[1].title || person.known_for[1].name }}</ng-container>
+          </small>
+          <span class="profile-link">Voir le profil et ses films →</span>
+        </span>
+      </button>
+    </div>
+  </section>
   <div class="movie-list-body">
     <app-movie
       *ngFor="let movie of movies"
@@ -39,6 +55,14 @@
   <app-movie-detail-overlay
     *ngIf="selectedMovie"
     [movie]="selectedMovie"
-    (close)="selectedMovie = null"
+    (close)="closeMovie()"
+    (selectActor)="openActor($event)"
   ></app-movie-detail-overlay>
+
+  <app-person-detail-overlay
+    *ngIf="selectedPersonId"
+    [personId]="selectedPersonId"
+    (close)="closeActor()"
+    (selectMovie)="openMovieFromActor($event)"
+  ></app-person-detail-overlay>
 </div>

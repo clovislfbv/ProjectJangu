@@ -14,6 +14,7 @@ import { Genre } from '../api-call.service';
 export class MovieDetailOverlayComponent implements OnChanges, OnInit {
     @Input() movie!: any;
     @Output() close = new EventEmitter<void>();
+    @Output() selectActor = new EventEmitter<CastMember>();
     genres: Genre[] = [];
 
     cast: CastMember[] = [];

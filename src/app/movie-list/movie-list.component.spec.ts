@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 
 import { ApiCallService, DiscoverMovieResponse, Movie } from '../api-call.service';
 import { MovieListComponent } from './movie-list.component';
+import { provideRouter, Router } from '@angular/router';
 
 describe('MovieListComponent', () => {
     let component: MovieListComponent;
@@ -26,14 +27,17 @@ describe('MovieListComponent', () => {
             'SearchMovies',
             'excludeEroticMovies',
             'excludeMoviesShorterThan',
+            'getMovieById',
+            'SearchPersons',
         ]);
         apiCall.DiscoverMovies.and.returnValue(of(response(1, 3, [movie(1)])));
         apiCall.excludeEroticMovies.and.callFake((movies: Movie[]) => of(movies));
         apiCall.excludeMoviesShorterThan.and.callFake((movies: Movie[]) => of(movies));
+        apiCall.SearchPersons.and.returnValue(of({ page: 1, results: [], total_pages: 1, total_results: 0 }));
 
         await TestBed.configureTestingModule({
             imports: [MovieListComponent],
-            providers: [{ provide: ApiCallService, useValue: apiCall }],
+            providers: [{ provide: ApiCallService, useValue: apiCall }, provideRouter([])],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MovieListComponent);
@@ -113,5 +117,82 @@ describe('MovieListComponent', () => {
             [[movie(41)]],
         ]);
         expect(apiCall.excludeMoviesShorterThan).not.toHaveBeenCalled();
+    });
+
+    it('adds the selected movie id to the shareable URL', async () => {
+        component.onSelect(movie(42));
+        await fixture.whenStable();
+
+        expect(TestBed.inject(Router).url).toContain('movie=42');
+        expect(component.selectedMovie?.id).toBe(42);
+    });
+
+    it('loads a movie opened directly from a URL parameter', async () => {
+        apiCall.getMovieById.and.returnValue(of(movie(99)));
+
+        await TestBed.inject(Router).navigate([], { queryParams: { movie: 99 } });
+        fixture.detectChanges();
+
+        expect(apiCall.getMovieById).toHaveBeenCalledWith(99);
+        expect(component.selectedMovie?.id).toBe(99);
+    });
+
+    it('removes the movie parameter when closing the overlay', async () => {
+        component.onSelect(movie(42));
+        await fixture.whenStable();
+
+        component.closeMovie();
+        await fixture.whenStable();
+
+        expect(TestBed.inject(Router).url).not.toContain('movie=');
+        expect(component.selectedMovie).toBeNull();
+    });
+
+    it('adds an actor id to the URL when an actor is selected', async () => {
+        component.onSelect(movie(42));
+        await fixture.whenStable();
+
+        component.openActor({
+            id: 287, name: 'Brad Pitt', character: '', cast_id: 1,
+            credit_id: 'credit', gender: 2, order: 0, profile_path: null,
+        });
+        await fixture.whenStable();
+
+        expect(TestBed.inject(Router).url).toContain('actor=287');
+        expect(TestBed.inject(Router).url).not.toContain('movie=');
+        expect(component.selectedPersonId).toBe(287);
+        expect(component.selectedMovie).toBeNull();
+    });
+
+    it('replaces the actor parameter with the movie parameter', async () => {
+        component.openPerson({
+            id: 287, name: 'Brad Pitt', profile_path: null,
+            known_for_department: 'Acting', known_for: [],
+        });
+        await fixture.whenStable();
+
+        component.onSelect(movie(550));
+        await fixture.whenStable();
+
+        expect(TestBed.inject(Router).url).toContain('movie=550');
+        expect(TestBed.inject(Router).url).not.toContain('actor=');
+        expect(component.selectedPersonId).toBeNull();
+    });
+
+    it('searches actors and displays acting profiles with movie links', () => {
+        apiCall.SearchMovies.and.returnValue(of(response(1, 1, [])));
+        apiCall.SearchPersons.and.returnValue(of({
+            page: 1, total_pages: 1, total_results: 1,
+            results: [{
+                id: 287, name: 'Brad Pitt', profile_path: null,
+                known_for_department: 'Acting',
+                known_for: [{ id: 550, title: 'Fight Club', media_type: 'movie' }],
+            }],
+        }));
+
+        component.search('Brad Pitt');
+
+        expect(apiCall.SearchPersons).toHaveBeenCalledWith('Brad Pitt');
+        expect(component.people[0].name).toBe('Brad Pitt');
     });
 });

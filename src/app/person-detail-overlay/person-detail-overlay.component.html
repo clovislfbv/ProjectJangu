@@ -1,0 +1,29 @@
+<div class="overlay-backdrop" (click)="close.emit()">
+  <section class="overlay-content" (click)="$event.stopPropagation()" aria-modal="true" role="dialog">
+    <button class="close-btn" type="button" (click)="close.emit()" aria-label="Fermer">✕</button>
+    <p *ngIf="isLoading" class="status">Chargement...</p>
+    <div *ngIf="person" class="detail-container">
+      <img class="detail-poster" [src]="person.profile_path ? 'https://image.tmdb.org/t/p/w500' + person.profile_path : '/assets/placeholder-profile.png'" [alt]="person.name">
+      <div class="detail-info">
+        <h1 class="title">{{ person.name }}</h1>
+        <div class="metadata">
+          <span *ngIf="person.known_for_department" class="pill">{{ person.known_for_department }}</span>
+          <span *ngIf="person.birthday" class="pill">Né(e) le {{ person.birthday | date:'longDate' }}</span>
+          <span *ngIf="person.deathday" class="pill">Décédé(e) le {{ person.deathday | date:'longDate' }}</span>
+          <span *ngIf="person.place_of_birth" class="pill">{{ person.place_of_birth }}</span>
+        </div>
+        <h2 class="section-title">Biographie</h2>
+        <p class="biography">{{ person.biography || 'Aucune biographie disponible.' }}</p>
+      </div>
+    </div>
+    <div *ngIf="person && movies.length" class="filmography">
+      <h2 class="section-title">Films connus</h2>
+      <div class="movie-list">
+        <button *ngFor="let movie of movies" class="movie-card" type="button" (click)="selectMovie.emit(movie.id)">
+          <img [src]="'https://image.tmdb.org/t/p/w185' + movie.poster_path" [alt]="movie.title">
+          <strong>{{ movie.title }}</strong><span>{{ movie.character }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

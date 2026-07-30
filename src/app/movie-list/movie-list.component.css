@@ -5,6 +5,20 @@
     width: 100%;
 }
 
+.people-results { padding: 1rem 1rem 0; color: #f0f0f0; }
+.people-results h2 { margin: 0 0 .75rem; font-size: 1.35rem; font-weight: 500; }
+.people-list { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: .75rem; }
+.person-result { flex: 0 0 250px; display: flex; gap: .75rem; align-items: center; background: transparent; color: inherit; border: 0; border-radius: 10px; padding: .5rem; text-align: left; cursor: pointer; transition: background-color .2s ease; }
+.person-result:hover, .person-result:focus-visible { background: #222; outline: none; }
+.person-result img { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; flex-shrink: 0; transition: filter .2s ease; }
+.person-result:hover img, .person-result:focus-visible img { filter: brightness(.65); }
+.person-result-info { min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
+.person-result-info strong, .person-result-info small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person-result-info strong { font-weight: 500; letter-spacing: .3px; transition: color .2s ease, transform .2s ease; }
+.person-result:hover strong, .person-result:focus-visible strong { color: #ffd54f; transform: translateX(2px); }
+.person-result-info small { color: #aaa; }
+.profile-link { color: #ccc; font-size: .75rem; }
+
 .movie-list-body {
     width: 100%;
     padding: 1rem;

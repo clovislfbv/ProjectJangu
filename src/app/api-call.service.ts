@@ -13,6 +13,51 @@ export interface CastMember {
     profile_path: string | null;
 }
 
+export interface PersonDetails {
+    id: number;
+    name: string;
+    biography: string;
+    birthday: string | null;
+    deathday: string | null;
+    place_of_birth: string | null;
+    profile_path: string | null;
+    known_for_department: string;
+}
+
+export interface PersonMovieCredit {
+    id: number;
+    title: string;
+    character: string;
+    poster_path: string | null;
+    release_date: string;
+    vote_count: number;
+}
+
+export interface PersonMovieCreditsResponse {
+    id: number;
+    cast: PersonMovieCredit[];
+}
+
+export interface PersonSearchResult {
+    id: number;
+    name: string;
+    profile_path: string | null;
+    known_for_department: string;
+    known_for: Array<{
+        id: number;
+        title?: string;
+        name?: string;
+        media_type: string;
+    }>;
+}
+
+export interface PersonSearchResponse {
+    page: number;
+    results: PersonSearchResult[];
+    total_pages: number;
+    total_results: number;
+}
+
 export interface MovieCreditsResponse {
     id: number;
     cast: CastMember[];
@@ -557,6 +602,38 @@ export class ApiCallService {
                 return url;
             },
             (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    SearchPersons(query: string): Observable<PersonSearchResponse> {
+        return this.getWithLanguageFallback<PersonSearchResponse>(
+            (language) => `${this.tmdbBaseUrl}/search/person?include_adult=false&language=${language}&page=1&query=${encodeURIComponent(query)}`,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getMovieById(movieId: number): Observable<Movie> {
+        return this.getWithLanguageFallback<Movie>(
+            (language) => `${this.tmdbBaseUrl}/movie/${movieId}?language=${language}`,
+            (movie) => movie != null && movie.id === movieId && Boolean(movie.title),
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getPersonDetails(personId: number): Observable<PersonDetails> {
+        return this.getWithLanguageFallback<PersonDetails>(
+            (language) => `${this.tmdbBaseUrl}/person/${personId}?language=${language}`,
+            (person) => person != null && person.id === personId && Boolean(person.name),
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getPersonMovieCredits(personId: number): Observable<PersonMovieCreditsResponse> {
+        return this.getWithLanguageFallback<PersonMovieCreditsResponse>(
+            (language) => `${this.tmdbBaseUrl}/person/${personId}/movie_credits?language=${language}`,
+            (response) => Array.isArray(response?.cast) && response.cast.length > 0,
             this.getLanguageFallbacks(),
         );
     }
