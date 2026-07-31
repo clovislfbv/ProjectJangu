@@ -38,6 +38,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     private requestGeneration = 0;
     private observer?: IntersectionObserver;
     private movieLinkSubscription?: Subscription;
+    private openingMovieFromActorId: number | null = null;
     private criteria: MovieListCriteria = {
         query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '',
     };
@@ -90,6 +91,13 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.closeMovie();
                 return;
             }
+
+            // onSelect() sets the movie before updating the URL. For movies
+            // opened from an actor profile, the movie is not necessarily in
+            // the main list; do not fetch and assign it a second time when the
+            // query-param navigation is observed, otherwise the detail iframe
+            // and streaming content are recreated.
+            if (this.selectedMovie?.id === movieId) return;
 
             const loadedMovie = this.movies.find(movie => movie.id === movieId);
             if (loadedMovie) {
@@ -213,6 +221,8 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     onSelect(movie: Movie) {
+        if (this.selectedMovie?.id === movie.id && !this.selectedPersonId) return;
+
         this.selectedMovie = movie;
         this.selectedPersonId = null;
         void this.router.navigate([], {
@@ -261,12 +271,26 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     openMovieFromActor(movieId: number): void {
-        this.closeActor();
+        if (this.openingMovieFromActorId === movieId || this.selectedMovie?.id === movieId) return;
+
+        // Update the two overlays locally, then perform one atomic URL change.
+        // Calling closeActor() here would add a redundant history entry.
+        this.selectedPersonId = null;
         const loadedMovie = this.movies.find(movie => movie.id === movieId);
         if (loadedMovie) {
             this.onSelect(loadedMovie);
             return;
         }
-        this.api_call.getMovieById(movieId).subscribe(movie => this.onSelect(movie));
+
+        this.openingMovieFromActorId = movieId;
+        this.api_call.getMovieById(movieId).subscribe({
+            next: movie => {
+                this.openingMovieFromActorId = null;
+                this.onSelect(movie);
+            },
+            error: () => {
+                this.openingMovieFromActorId = null;
+            },
+        });
     }
 }

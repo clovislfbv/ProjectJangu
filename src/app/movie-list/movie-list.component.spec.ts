@@ -179,6 +179,48 @@ describe('MovieListComponent', () => {
         expect(component.selectedPersonId).toBeNull();
     });
 
+    it('opens a loaded movie from an actor with a single navigation', async () => {
+        const router = TestBed.inject(Router);
+        component.movies = [movie(550)];
+        component.selectedPersonId = 287;
+        const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
+
+        component.openMovieFromActor(550);
+
+        expect(navigateSpy).toHaveBeenCalledTimes(1);
+        expect(navigateSpy).toHaveBeenCalledWith([], jasmine.objectContaining({
+            queryParams: { movie: 550, actor: null },
+        }));
+        expect(component.selectedPersonId).toBeNull();
+        expect(component.selectedMovie?.id).toBe(550);
+    });
+
+    it('does not request or open the same actor movie multiple times', () => {
+        apiCall.getMovieById.and.returnValue(of(movie(550)));
+        const navigateSpy = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+        component.selectedPersonId = 287;
+
+        component.openMovieFromActor(550);
+        component.openMovieFromActor(550);
+
+        expect(apiCall.getMovieById).toHaveBeenCalledTimes(1);
+        expect(navigateSpy).toHaveBeenCalledTimes(1);
+        expect(component.selectedMovie?.id).toBe(550);
+    });
+
+    it('does not reload an actor movie when its URL navigation is observed', async () => {
+        apiCall.getMovieById.and.returnValue(of(movie(550)));
+        component.selectedPersonId = 287;
+
+        component.openMovieFromActor(550);
+        await fixture.whenStable();
+
+        expect(apiCall.getMovieById).toHaveBeenCalledTimes(1);
+        expect(TestBed.inject(Router).url).toContain('movie=550');
+        expect(TestBed.inject(Router).url).not.toContain('actor=');
+        expect(component.selectedMovie?.id).toBe(550);
+    });
+
     it('searches actors and displays acting profiles with movie links', () => {
         apiCall.SearchMovies.and.returnValue(of(response(1, 1, [])));
         apiCall.SearchPersons.and.returnValue(of({
