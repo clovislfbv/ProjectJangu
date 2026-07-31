@@ -221,6 +221,27 @@ describe('MovieListComponent', () => {
         expect(component.selectedMovie?.id).toBe(550);
     });
 
+    it('allows reopening the same movie after returning to the actor', async () => {
+        const router = TestBed.inject(Router);
+        apiCall.getMovieById.and.returnValue(of(movie(550)));
+
+        await router.navigate([], { queryParams: { actor: 287 } });
+        component.openMovieFromActor(550);
+        await fixture.whenStable();
+        expect(component.selectedMovie?.id).toBe(550);
+
+        await router.navigate([], { queryParams: { actor: 287, movie: null } });
+        expect(component.selectedMovie).toBeNull();
+        expect(component.selectedPersonId).toBe(287);
+
+        component.openMovieFromActor(550);
+        await fixture.whenStable();
+
+        expect(apiCall.getMovieById).toHaveBeenCalledTimes(2);
+        expect(component.selectedMovie?.id).toBe(550);
+        expect(router.url).toContain('movie=550');
+    });
+
     it('searches actors and displays acting profiles with movie links', () => {
         apiCall.SearchMovies.and.returnValue(of(response(1, 1, [])));
         apiCall.SearchPersons.and.returnValue(of({

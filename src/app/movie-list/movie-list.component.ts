@@ -82,7 +82,10 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
             const actorId = Number(rawActorId);
             this.selectedPersonId = rawActorId && Number.isInteger(actorId) && actorId > 0 ? actorId : null;
             if (!rawMovieId) {
-                if (!this.selectedPersonId) this.selectedMovie = null;
+                // The URL is the source of truth. In particular, browser Back
+                // from a movie to its actor must clear the hidden movie state
+                // so the same film can be selected again afterwards.
+                this.selectedMovie = null;
                 return;
             }
 
