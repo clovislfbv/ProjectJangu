@@ -65,13 +65,14 @@
                     <p *ngIf="streamingLinksLoaded" class="no-cast">{{ getNoStreamingFoundMessage() }}</p>
                 </ng-template>
 
-                <div *ngIf="videos.length > 0" class="video-container">
+                <div *ngIf="trailerUrl" class="video-container">
                     <iframe
-                        [src]="getVideoUrl(videos[0])"
+                        [src]="trailerUrl"
                         width="560"
                         height="315"
                         frameborder="0"
-                        allowfullscreen>
+                        allowfullscreen
+                        title="Bande-annonce du film">
                     </iframe>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiCallService, CastMember, MovieDetailsResponse, StreamingLink } from '../api-call.service';
@@ -11,7 +11,7 @@ import { Genre } from '../api-call.service';
     templateUrl: './movie-detail-overlay.component.html',
     styleUrls: ['./movie-detail-overlay.component.css'],
 })
-export class MovieDetailOverlayComponent implements OnChanges, OnInit {
+export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy {
     @Input() movie!: any;
     @Output() close = new EventEmitter<void>();
     @Output() selectActor = new EventEmitter<CastMember>();
@@ -19,6 +19,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
 
     cast: CastMember[] = [];
     videos: any[] = [];
+    trailerUrl: SafeResourceUrl | null = null;
     runtimeMinutes: number | null = null;
     streamingLinks: StreamingLink[] = [];
     streamingLinksLoaded = false;
@@ -30,6 +31,8 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['movie'] && this.movie?.id) {
+            this.videos = [];
+            this.trailerUrl = null;
             this.resolveOverview();
             this.loadCast(this.movie.id);
             this.loadVideos(this.movie.id);
@@ -39,6 +42,8 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
         } else if (!this.movie) {
             this.restoreBodyScrollOnIOS();
             this.runtimeMinutes = null;
+            this.videos = [];
+            this.trailerUrl = null;
             this.streamingLinks = [];
             this.streamingLinksLoaded = false;
 
@@ -67,6 +72,12 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
         this.apiCall.getMovieGenres().subscribe((response) => {
             this.genres = response.genres;
         });
+    }
+
+    ngOnDestroy(): void {
+        // Browser back/forward navigation removes the overlay through *ngIf
+        // without calling closeOverlay(), so always restore page scrolling.
+        this.restoreBodyScrollOnIOS();
     }
 
     closeOverlay() {
@@ -142,6 +153,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
                 // If view counts are equal (or both 0), sort by size
                 return (b.size || 0) - (a.size || 0);
             });
+            this.trailerUrl = this.createVideoUrl(this.videos[0]);
         });
     }
 
@@ -230,14 +242,14 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit {
             .join(', ') || 'NA';
     }
 
-    getVideoUrl(video: any): SafeResourceUrl {
-        if (!video) return '';
+    private createVideoUrl(video: any): SafeResourceUrl | null {
+        if (!video) return null;
         let url = '';
         if (video.site === 'YouTube') {
             url = `https://www.youtube.com/embed/${video.key}`;
         } else if (video.site === 'Vimeo') {
             url = `https://player.vimeo.com/video/${video.key}`;
         }
-        return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+        return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
     }
 }
