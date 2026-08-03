@@ -24,6 +24,7 @@ describe('MovieListComponent', () => {
     beforeEach(async () => {
         apiCall = jasmine.createSpyObj<ApiCallService>('ApiCallService', [
             'DiscoverMovies',
+            'getPopularMovies',
             'SearchMovies',
             'excludeEroticMovies',
             'excludeMoviesShorterThan',
@@ -31,6 +32,7 @@ describe('MovieListComponent', () => {
             'SearchPersons',
         ]);
         apiCall.DiscoverMovies.and.returnValue(of(response(1, 3, [movie(1)])));
+        apiCall.getPopularMovies.and.returnValue(of(response(1, 1, [movie(100)])));
         apiCall.excludeEroticMovies.and.callFake((movies: Movie[]) => of(movies));
         apiCall.excludeMoviesShorterThan.and.callFake((movies: Movie[]) => of(movies));
         apiCall.SearchPersons.and.returnValue(of({ page: 1, results: [], total_pages: 1, total_results: 0 }));
@@ -84,6 +86,13 @@ describe('MovieListComponent', () => {
 
         expect(component.movies.map(({ id }) => id)).toEqual([10]);
         expect(apiCall.SearchMovies).toHaveBeenCalledWith('matrix', '', '', 1);
+    });
+
+    it('loads popular movies from the dedicated endpoint', () => {
+        component.showPopularMovies();
+
+        expect(apiCall.getPopularMovies).toHaveBeenCalledWith(1);
+        expect(component.movies.map(({ id }) => id)).toEqual([100]);
     });
 
     it('does not apply the current year by default when filtering by country', () => {

@@ -589,6 +589,14 @@ export class ApiCallService {
         );
     }
 
+    getPopularMovies(page: number = 1): Observable<DiscoverMovieResponse> {
+        return this.getWithLanguageFallback<DiscoverMovieResponse>(
+            (language) => `${this.tmdbBaseUrl}/movie/popular?include_adult=false&language=${language}&page=${page}`,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
     SearchMovies(query: string, selectedYear: string = '', selectedCountry: string = '', page: number = 1): Observable<DiscoverMovieResponse> {
         return this.getWithLanguageFallback<DiscoverMovieResponse>(
             (language) => {

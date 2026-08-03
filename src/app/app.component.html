@@ -1,5 +1,21 @@
 <div class="header">
-    <h1>Movie browser</h1>
+    <div class="header-top">
+        <button
+            class="burger-button"
+            type="button"
+            aria-label="Ouvrir le menu de navigation"
+            aria-controls="main-menu"
+            [attr.aria-expanded]="isMenuOpen"
+            (click)="toggleMenu()"
+        >
+            <span></span><span></span><span></span>
+        </button>
+        <h1>Movie browser</h1>
+    </div>
+    <nav id="main-menu" class="burger-menu" [class.open]="isMenuOpen" aria-label="Navigation principale">
+        <button type="button" (click)="movieList.showNowPlayingMovies(); closeMenu()">🎬 À l'affiche</button>
+        <button type="button" (click)="movieList.showPopularMovies(); closeMenu()">🔥 Films populaires</button>
+    </nav>
     <app-search-bar
         (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre, $event.country)"
     ></app-search-bar>

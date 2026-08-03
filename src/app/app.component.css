@@ -53,6 +53,72 @@ body {
     text-align: center;
 }
 
+.header-top {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.burger-button {
+    position: absolute;
+    left: 0;
+    display: grid;
+    gap: 5px;
+    padding: 0.7rem;
+    border: 1px solid #4a4a4a;
+    border-radius: 10px;
+    background: #2d2d2d;
+    cursor: pointer;
+}
+
+.burger-button span {
+    width: 25px;
+    height: 3px;
+    border-radius: 3px;
+    background: #00c6ff;
+}
+
+.burger-button:focus-visible,
+.burger-menu button:focus-visible {
+    outline: 3px solid #00c6ff;
+    outline-offset: 2px;
+}
+
+.burger-menu {
+    position: absolute;
+    top: 75px;
+    left: 1rem;
+    display: none;
+    min-width: 220px;
+    padding: 0.5rem;
+    border: 1px solid #444;
+    border-radius: 12px;
+    background: #292929;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.burger-menu.open {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.burger-menu button {
+    padding: 0.8rem 1rem;
+    border: 0;
+    border-radius: 8px;
+    color: #fff;
+    background: transparent;
+    font: 600 0.95rem 'Poppins', sans-serif;
+    text-align: left;
+    cursor: pointer;
+}
+
+.burger-menu button:hover {
+    background: #3b3b3b;
+}
+
 /* Tablet styles */
 @media (max-width: 1024px) {
     .header h1 {
@@ -93,8 +159,22 @@ body {
     }
     
     .header h1 {
-        font-size: 2.2rem;
+        font-size: 1.7rem;
         letter-spacing: 0.8px;
+    }
+
+    .burger-button {
+        left: 0.25rem;
+        padding: 0.55rem;
+    }
+
+    .burger-button span {
+        width: 21px;
+    }
+
+    .burger-menu {
+        top: 60px;
+        left: 0.5rem;
     }
     
     .body {

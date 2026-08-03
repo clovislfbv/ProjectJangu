@@ -24,6 +24,18 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, ProjectJangu');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Movie browser');
+  });
+
+  it('should open the burger menu', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('.burger-button') as HTMLButtonElement;
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.isMenuOpen).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.burger-menu')?.classList).toContain('open');
   });
 });

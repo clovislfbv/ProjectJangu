@@ -18,6 +18,8 @@ interface MovieListCriteria {
     country: string;
 }
 
+type MovieListView = 'now-playing' | 'popular';
+
 @Component({
     selector: 'app-movie-list',
     standalone: true,
@@ -39,6 +41,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     private observer?: IntersectionObserver;
     private movieLinkSubscription?: Subscription;
     private openingMovieFromActorId: number | null = null;
+    private currentView: MovieListView = 'now-playing';
     private criteria: MovieListCriteria = {
         query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '',
     };
@@ -153,7 +156,9 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
             && alphabetic === 'popularity.desc';
         this.isLoading = true;
         this.loadError = null;
-        const request = country
+        const request = this.currentView === 'popular' && isDefaultView
+            ? this.api_call.getPopularMovies(page)
+            : country
             ? this.api_call.DiscoverMovies(alphabetic, year, genre, country, page)
             : trimmedQuery
                 ? this.api_call.SearchMovies(query, year, '', page)
@@ -203,6 +208,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /** Called by the search bar */
     search(query: string, alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '', selectedCountry: string = '') {
+        this.currentView = 'now-playing';
         this.criteria = {
             query,
             alphabetic: alphabeticSelect,
@@ -220,6 +226,20 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
                 error: () => this.people = [],
             });
         }
+        this.resetAndLoad();
+    }
+
+    showPopularMovies(): void {
+        this.currentView = 'popular';
+        this.criteria = { query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '' };
+        this.people = [];
+        this.resetAndLoad();
+    }
+
+    showNowPlayingMovies(): void {
+        this.currentView = 'now-playing';
+        this.criteria = { query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '' };
+        this.people = [];
         this.resetAndLoad();
     }
 

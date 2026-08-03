@@ -11,4 +11,13 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
 })
 export class AppComponent {
     title = 'ProjectJangu';
+    isMenuOpen = false;
+
+    toggleMenu(): void {
+        this.isMenuOpen = !this.isMenuOpen;
+    }
+
+    closeMenu(): void {
+        this.isMenuOpen = false;
+    }
 }
