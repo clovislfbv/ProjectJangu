@@ -36,6 +36,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     people: PersonSearchResult[] = [];
     tvShows: TvShow[] = [];
     selectedTvShow: TvShow | null = null;
+    selectedSeasonNumber: number | null = null;
     isLoading: boolean = true;
     loadError: string | null = null;
     private currentPage = 0;
@@ -86,12 +87,19 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.movieLinkSubscription = this.route.queryParamMap.subscribe((params) => {
             const rawMovieId = params.get('movie');
             const rawTvId = params.get('tv');
+            const rawSeasonNumber = params.get('season');
             const rawActorId = params.get('actor');
             const actorId = Number(rawActorId);
             this.selectedPersonId = rawActorId && Number.isInteger(actorId) && actorId > 0 ? actorId : null;
+            const seasonNumber = Number(rawSeasonNumber);
+            this.selectedSeasonNumber = rawTvId && rawSeasonNumber !== null
+                && Number.isInteger(seasonNumber) && seasonNumber >= 0
+                ? seasonNumber
+                : null;
 
             if (!rawTvId) {
                 this.selectedTvShow = null;
+                this.selectedSeasonNumber = null;
             } else {
                 const tvId = Number(rawTvId);
                 if (!Number.isInteger(tvId) || tvId <= 0) {
@@ -325,7 +333,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedPersonId = null;
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { tv: show.id, movie: null, actor: null },
+            queryParams: { tv: show.id, season: null, movie: null, actor: null },
             queryParamsHandling: 'merge',
         });
     }
@@ -334,7 +342,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedTvShow = null;
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { tv: null },
+            queryParams: { tv: null, season: null },
             queryParamsHandling: 'merge',
         });
     }
@@ -344,14 +352,34 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.openActor(actor);
     }
 
+    openTvSeason(seasonNumber: number): void {
+        this.selectedSeasonNumber = seasonNumber;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { season: seasonNumber },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    closeTvSeason(): void {
+        this.selectedSeasonNumber = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { season: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
     onSelect(movie: Movie) {
         if (this.selectedMovie?.id === movie.id && !this.selectedPersonId) return;
 
         this.selectedMovie = movie;
         this.selectedPersonId = null;
+        this.selectedTvShow = null;
+        this.selectedSeasonNumber = null;
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { movie: movie.id, actor: null },
+            queryParams: { movie: movie.id, actor: null, tv: null, season: null },
             queryParamsHandling: 'merge',
         });
     }
@@ -370,7 +398,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedMovie = null;
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { actor: actor.id, movie: null, tv: null },
+            queryParams: { actor: actor.id, movie: null, tv: null, season: null },
             queryParamsHandling: 'merge',
         });
     }
@@ -380,7 +408,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedMovie = null;
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { actor: person.id, movie: null, tv: null },
+            queryParams: { actor: person.id, movie: null, tv: null, season: null },
             queryParamsHandling: 'merge',
         });
     }

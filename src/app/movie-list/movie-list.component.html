@@ -76,7 +76,10 @@
   <app-tv-detail-overlay
     *ngIf="selectedTvShow"
     [show]="selectedTvShow"
+    [seasonNumber]="selectedSeasonNumber"
     (close)="closeTvShow()"
     (selectActor)="openActorFromTv($event)"
+    (selectSeason)="openTvSeason($event)"
+    (closeSeasonDetails)="closeTvSeason()"
   ></app-tv-detail-overlay>
 </div>

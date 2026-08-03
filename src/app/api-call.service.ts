@@ -150,6 +150,33 @@ export interface TvShowDetails extends TvShow {
     seasons: Array<{ id: number; name: string; episode_count: number; air_date: string | null; poster_path: string | null; season_number: number }>;
 }
 
+export interface TvSeasonSummary {
+    id: number;
+    name: string;
+    episode_count: number;
+    air_date: string | null;
+    poster_path: string | null;
+    season_number: number;
+}
+
+export interface TvEpisode {
+    id: number;
+    name: string;
+    overview: string;
+    air_date: string | null;
+    episode_number: number;
+    season_number: number;
+    runtime: number | null;
+    still_path: string | null;
+    vote_average: number;
+    guest_stars?: CastMember[];
+}
+
+export interface TvSeasonDetails extends TvSeasonSummary {
+    overview: string;
+    episodes: TvEpisode[];
+}
+
 export interface Genre {
     id: number;
     name: string;
@@ -714,6 +741,14 @@ export class ApiCallService {
         return this.getWithLanguageFallback<TvShow>(
             (language) => `${this.tmdbBaseUrl}/tv/${tvId}?language=${language}`,
             (show) => show?.id === tvId && Boolean(show.name),
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getTvSeasonDetails(tvId: number, seasonNumber: number): Observable<TvSeasonDetails> {
+        return this.getWithLanguageFallback<TvSeasonDetails>(
+            (language) => `${this.tmdbBaseUrl}/tv/${tvId}/season/${seasonNumber}?language=${language}`,
+            (season) => season?.season_number === seasonNumber && Array.isArray(season.episodes),
             this.getLanguageFallbacks(),
         );
     }

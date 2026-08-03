@@ -1,0 +1,36 @@
+<div class="overlay-backdrop" (click)="closeOverlay()">
+  <article class="overlay-content" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="show.name">
+    <button class="close-btn" type="button" aria-label="Fermer" (click)="closeOverlay()">✕</button>
+    <p *ngIf="isLoading" class="loading">Chargement des informations…</p>
+    <div class="hero">
+      <img class="poster" [src]="show.poster_path ? 'https://image.tmdb.org/t/p/w500' + show.poster_path : '/assets/placeholder-poster.png'" [alt]="show.name">
+      <div class="info">
+        <h1>{{ details?.name || show.name }}</h1>
+        <p *ngIf="details?.tagline" class="tagline">{{ details?.tagline }}</p>
+        <div class="metadata">
+          <span>⭐ {{ (details?.vote_average ?? show.vote_average) | number:'1.1-1' }}</span>
+          <span>{{ details?.first_air_date ? (details?.first_air_date | date:'yyyy') : 'Date inconnue' }}</span>
+          <span>{{ runtime() }}</span>
+          <span>{{ details?.number_of_seasons || 0 }} saison(s)</span>
+          <span>{{ details?.number_of_episodes || 0 }} épisode(s)</span>
+          <span>{{ details?.status || 'Statut inconnu' }}</span>
+        </div>
+        <h2>Résumé</h2>
+        <p>{{ details?.overview || show.overview || 'Aucun résumé disponible.' }}</p>
+        <p><strong>Genres :</strong> {{ genreNames() }}</p>
+        <p *ngIf="details?.networks?.length"><strong>Diffuseurs :</strong> {{ details?.networks?.[0]?.name }}</p>
+        <section *ngIf="providers.length">
+          <h2>Streaming</h2>
+          <a *ngFor="let provider of providers" class="provider" [href]="providerLink" target="_blank" rel="noopener noreferrer">
+            <img *ngIf="provider.logo_path" [src]="'https://image.tmdb.org/t/p/w92' + provider.logo_path" [alt]="provider.provider_name">
+            {{ provider.provider_name }}
+          </a>
+        </section>
+      </div>
+    </div>
+    <section *ngIf="trailerUrl" class="trailer"><h2>Bande-annonce</h2><iframe [src]="trailerUrl" title="Bande-annonce de la série" allowfullscreen></iframe></section>
+    <section *ngIf="details?.seasons?.length"><h2>Saisons</h2><div class="seasons"><button *ngFor="let season of details?.seasons" class="season" type="button" (click)="openSeason(season)" [attr.aria-label]="'Voir les détails de ' + season.name"><strong>{{ season.name }}</strong><span>{{ season.episode_count }} épisodes</span><small>{{ season.air_date | date:'yyyy' }}</small><span class="season-link">Voir les épisodes →</span></button></div></section>
+    <section *ngIf="cast.length"><h2>Distribution</h2><div class="cast"><button *ngFor="let actor of cast" class="actor" type="button" (click)="openActor(actor)" [attr.aria-label]="'Voir le profil de ' + actor.name"><img [src]="actor.profile_path ? 'https://image.tmdb.org/t/p/w185' + actor.profile_path : '/assets/placeholder-profile.png'" [alt]="actor.name"><strong>{{ actor.name }}</strong><small>{{ actor.character }}</small></button></div></section>
+  </article>
+  <app-tv-season-detail-overlay *ngIf="selectedSeason" [tvId]="show.id" [showName]="details?.name || show.name" [season]="selectedSeason" [seriesCastIds]="castIds" (close)="closeSeason()" (selectActor)="openActorFromSeason($event)"></app-tv-season-detail-overlay>
+</div>

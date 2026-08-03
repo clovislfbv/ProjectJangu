@@ -232,6 +232,39 @@ describe('MovieListComponent', () => {
         expect(component.selectedTvShow).toBeNull();
     });
 
+    it('adds a season number to the TV shareable URL', async () => {
+        component.selectTvShow({
+            id: 1399, name: 'Game of Thrones', original_name: 'Game of Thrones', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2011-04-17', genre_ids: [18], original_language: 'en',
+            popularity: 100, vote_average: 8.5, vote_count: 20000, origin_country: ['US'],
+        });
+        await fixture.whenStable();
+
+        component.openTvSeason(2);
+        await fixture.whenStable();
+
+        expect(TestBed.inject(Router).url).toContain('tv=1399');
+        expect(TestBed.inject(Router).url).toContain('season=2');
+        expect(component.selectedSeasonNumber).toBe(2);
+    });
+
+    it('restores a season from a direct URL and removes only season when closed', async () => {
+        apiCall.getTvShowById.and.returnValue(of({
+            id: 1399, name: 'Game of Thrones', original_name: 'Game of Thrones', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2011-04-17', genre_ids: [18], original_language: 'en',
+            popularity: 100, vote_average: 8.5, vote_count: 20000, origin_country: ['US'],
+        }));
+        await TestBed.inject(Router).navigate([], { queryParams: { tv: 1399, season: 3 } });
+        fixture.detectChanges();
+
+        expect(component.selectedSeasonNumber).toBe(3);
+
+        component.closeTvSeason();
+        await fixture.whenStable();
+        expect(TestBed.inject(Router).url).toContain('tv=1399');
+        expect(TestBed.inject(Router).url).not.toContain('season=');
+    });
+
     it('does not apply the current year by default when filtering by country', () => {
         apiCall.DiscoverMovies.and.returnValue(of(response(1, 1, [movie(20)])));
 

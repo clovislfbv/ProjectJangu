@@ -1,0 +1,51 @@
+<div class="season-backdrop" (click)="close.emit()">
+  <article class="season-content" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="showName + ' - ' + season.name">
+    <button class="close-btn" type="button" aria-label="Fermer les détails de la saison" (click)="close.emit()">✕</button>
+    <p *ngIf="isLoading" class="status">Chargement de la saison…</p>
+    <p *ngIf="loadError" class="status error">Impossible de charger cette saison.</p>
+
+    <ng-container *ngIf="details">
+      <header class="season-header">
+        <img [src]="details.poster_path ? 'https://image.tmdb.org/t/p/w342' + details.poster_path : '/assets/placeholder-poster.png'" [alt]="details.name">
+        <div>
+          <p class="show-name">{{ showName }}</p>
+          <h1>{{ details.name }}</h1>
+          <div class="metadata">
+            <span>{{ details.episodes.length }} épisode(s)</span>
+            <span *ngIf="details.air_date">{{ details.air_date | date:'longDate' }}</span>
+          </div>
+          <p>{{ details.overview || 'Aucun résumé disponible pour cette saison.' }}</p>
+        </div>
+      </header>
+
+      <section class="episodes" *ngIf="details.episodes.length">
+        <h2>Épisodes</h2>
+        <article *ngFor="let episode of details.episodes" class="episode-card">
+          <img [src]="episode.still_path ? 'https://image.tmdb.org/t/p/w300' + episode.still_path : '/assets/placeholder-poster.png'" [alt]="episode.name">
+          <div>
+            <div class="episode-heading">
+              <h3>{{ episode.episode_number }}. {{ episode.name }}</h3>
+              <span *ngIf="episode.vote_average">⭐ {{ episode.vote_average | number:'1.1-1' }}</span>
+            </div>
+            <div class="episode-meta">
+              <span *ngIf="episode.air_date">{{ episode.air_date | date:'mediumDate' }}</span>
+              <span *ngIf="episode.runtime">{{ episode.runtime }} min</span>
+            </div>
+            <p>{{ episode.overview || 'Aucun résumé disponible.' }}</p>
+            <div *ngIf="episodeOnlyActors(episode) as episodeActors" class="episode-cast">
+              <ng-container *ngIf="episodeActors.length">
+                <h4>Invités de cet épisode</h4>
+                <div class="guest-list" tabindex="0" aria-label="Acteurs invités de cet épisode, défilement horizontal">
+                  <button *ngFor="let actor of episodeActors" type="button" class="guest" (click)="selectActor.emit(actor)" [attr.aria-label]="'Voir le profil de ' + actor.name">
+                    <img [src]="actor.profile_path ? 'https://image.tmdb.org/t/p/w92' + actor.profile_path : '/assets/placeholder-profile.png'" [alt]="actor.name">
+                    <span><strong>{{ actor.name }}</strong><small>{{ actor.character }}</small></span>
+                  </button>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </article>
+      </section>
+    </ng-container>
+  </article>
+</div>
