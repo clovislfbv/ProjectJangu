@@ -25,14 +25,45 @@ describe('MovieListComponent', () => {
         apiCall = jasmine.createSpyObj<ApiCallService>('ApiCallService', [
             'DiscoverMovies',
             'getPopularMovies',
+            'getPopularTvShows',
+            'discoverTvShows',
+            'searchTvShows',
             'SearchMovies',
             'excludeEroticMovies',
             'excludeMoviesShorterThan',
             'getMovieById',
+            'getTvShowById',
             'SearchPersons',
         ]);
         apiCall.DiscoverMovies.and.returnValue(of(response(1, 3, [movie(1)])));
         apiCall.getPopularMovies.and.returnValue(of(response(1, 1, [movie(100)])));
+        apiCall.getPopularTvShows.and.returnValue(of({ page: 1, total_pages: 1, total_results: 2, results: [{
+            id: 200, name: 'Popular show', original_name: 'Popular show', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2026-01-01', genre_ids: [], original_language: 'en',
+            popularity: 100, vote_average: 8, vote_count: 10, origin_country: ['US'],
+        }, {
+            id: 201, name: 'Reality show', original_name: 'Reality show', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2026-01-01', genre_ids: [10764], original_language: 'en',
+            popularity: 90, vote_average: 7, vote_count: 5, origin_country: ['US'],
+        }, {
+            id: 202, name: 'Animated show', original_name: 'Animated show', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2026-01-01', genre_ids: [16], original_language: 'en',
+            popularity: 80, vote_average: 8, vote_count: 5, origin_country: ['JP'],
+        }, {
+            id: 204, name: 'Soap show', original_name: 'Soap show', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2026-01-01', genre_ids: [10766], original_language: 'es',
+            popularity: 75, vote_average: 7, vote_count: 5, origin_country: ['MX'],
+        }] }));
+        apiCall.discoverTvShows.and.returnValue(of({ page: 1, total_pages: 1, total_results: 1, results: [{
+            id: 203, name: 'French drama', original_name: 'French drama', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2025-01-01', genre_ids: [18], original_language: 'fr',
+            popularity: 70, vote_average: 8, vote_count: 5, origin_country: ['FR'],
+        }] }));
+        apiCall.searchTvShows.and.returnValue(of({ page: 1, total_pages: 1, total_results: 1, results: [{
+            id: 205, name: 'Searched animated show', original_name: 'Searched animated show', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2024-01-01', genre_ids: [16], original_language: 'ja',
+            popularity: 60, vote_average: 8, vote_count: 5, origin_country: ['JP'],
+        }] }));
         apiCall.excludeEroticMovies.and.callFake((movies: Movie[]) => of(movies));
         apiCall.excludeMoviesShorterThan.and.callFake((movies: Movie[]) => of(movies));
         apiCall.SearchPersons.and.returnValue(of({ page: 1, results: [], total_pages: 1, total_results: 0 }));
@@ -93,6 +124,112 @@ describe('MovieListComponent', () => {
 
         expect(apiCall.getPopularMovies).toHaveBeenCalledWith(1);
         expect(component.movies.map(({ id }) => id)).toEqual([100]);
+    });
+
+    it('loads popular TV shows from the dedicated endpoint', () => {
+        component.showPopularTvShows();
+
+        expect(apiCall.getPopularTvShows).toHaveBeenCalledWith(1);
+        expect(component.tvShows[0].name).toBe('Popular show');
+        expect(component.tvShows.map(show => show.name)).not.toContain('Reality show');
+        expect(component.tvShows.map(show => show.name)).not.toContain('Animated show');
+        expect(component.tvShows.map(show => show.name)).not.toContain('Soap show');
+        expect(component.movies).toEqual([]);
+    });
+
+    it('keeps TV context and uses discover TV when filters are applied', () => {
+        component.showPopularTvShows();
+
+        component.search('', 'title.asc', '2025', '18', 'FR');
+
+        expect(apiCall.discoverTvShows).toHaveBeenCalledWith('title.asc', '2025', '18', 'FR', 1);
+        expect(apiCall.DiscoverMovies).not.toHaveBeenCalledWith('title.asc', '2025', '18', 'FR', 1);
+        expect(component.tvShows.map(show => show.name)).toEqual(['French drama']);
+    });
+
+    it('does not exclude TV genres when searching for a specific series', () => {
+        component.showPopularTvShows();
+
+        component.search('Searched animated show');
+
+        expect(apiCall.searchTvShows).toHaveBeenCalledWith('Searched animated show', '', 1);
+        expect(component.tvShows.map(show => show.name)).toContain('Searched animated show');
+    });
+
+    it('opens a person profile from a TV cast member', async () => {
+        component.selectTvShow({
+            id: 200, name: 'Show', original_name: 'Show', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2026-01-01', genre_ids: [], original_language: 'en',
+            popularity: 1, vote_average: 8, vote_count: 1, origin_country: ['US'],
+        });
+
+        component.openActorFromTv({
+            id: 287, name: 'Actor', character: 'Character', cast_id: 1,
+            credit_id: 'credit', gender: 2, order: 0, profile_path: null,
+        });
+        await fixture.whenStable();
+
+        expect(component.selectedTvShow).toBeNull();
+        expect(component.selectedPersonId).toBe(287);
+        expect(TestBed.inject(Router).url).toContain('actor=287');
+    });
+
+    it('opens a TV show selected from a person profile', async () => {
+        component.openPerson({ id: 287, name: 'Actor', profile_path: null, known_for_department: 'Acting', known_for: [] });
+        const show = {
+            id: 1399, name: 'Game of Thrones', original_name: 'Game of Thrones', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2011-04-17', genre_ids: [18], original_language: 'en',
+            popularity: 100, vote_average: 8.5, vote_count: 20000, origin_country: ['US'],
+        };
+
+        component.openTvShowFromActor(show);
+        await fixture.whenStable();
+
+        expect(component.selectedPersonId).toBeNull();
+        expect(component.selectedTvShow?.id).toBe(1399);
+        expect(TestBed.inject(Router).url).toContain('tv=1399');
+        expect(TestBed.inject(Router).url).not.toContain('actor=');
+    });
+
+    it('adds the selected TV show id to the shareable URL', async () => {
+        component.selectTvShow({
+            id: 1399, name: 'Game of Thrones', original_name: 'Game of Thrones', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2011-04-17', genre_ids: [18], original_language: 'en',
+            popularity: 100, vote_average: 8.5, vote_count: 20000, origin_country: ['US'],
+        });
+        await fixture.whenStable();
+
+        expect(TestBed.inject(Router).url).toContain('tv=1399');
+        expect(component.selectedTvShow?.id).toBe(1399);
+    });
+
+    it('loads a TV show opened directly from a URL parameter', async () => {
+        apiCall.getTvShowById.and.returnValue(of({
+            id: 1399, name: 'Game of Thrones', original_name: 'Game of Thrones', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2011-04-17', genre_ids: [18], original_language: 'en',
+            popularity: 100, vote_average: 8.5, vote_count: 20000, origin_country: ['US'],
+        }));
+
+        await TestBed.inject(Router).navigate([], { queryParams: { tv: 1399 } });
+        fixture.detectChanges();
+
+        expect(apiCall.getTvShowById).toHaveBeenCalledWith(1399);
+        expect(component.selectedTvShow?.id).toBe(1399);
+    });
+
+    it('removes the TV parameter when closing the overlay', async () => {
+        component.selectTvShow({
+            id: 1399, name: 'Game of Thrones', original_name: 'Game of Thrones', overview: '', poster_path: null,
+            backdrop_path: null, first_air_date: '2011-04-17', genre_ids: [18], original_language: 'en',
+            popularity: 100, vote_average: 8.5, vote_count: 20000, origin_country: ['US'],
+        });
+        await fixture.whenStable();
+
+        component.closeTvShow();
+        await fixture.whenStable();
+
+        expect(TestBed.inject(Router).url).not.toContain('tv=');
+        expect(component.selectedTvShow).toBeNull();
     });
 
     it('does not apply the current year by default when filtering by country', () => {

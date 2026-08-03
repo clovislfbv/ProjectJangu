@@ -1,7 +1,7 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiCallService, Genre } from '../api-call.service';
+import { ApiCallService, EXCLUDED_TV_GENRE_IDS, Genre } from '../api-call.service';
 
 @Component({
     selector: 'app-search-bar',
@@ -10,7 +10,8 @@ import { ApiCallService, Genre } from '../api-call.service';
     templateUrl: './search-bar.component.html',
     styleUrls: ['./search-bar.component.css'],
 })
-export class SearchBarComponent implements OnInit {
+export class SearchBarComponent implements OnInit, OnChanges {
+    @Input() mediaType: 'movie' | 'tv' = 'movie';
     @Output() search = new EventEmitter<{
         query: string;
         alphabetic: string;
@@ -50,8 +51,24 @@ export class SearchBarComponent implements OnInit {
         for (let year = this.currentYear; year >= 1900; year--) {
             this.years.push(year);
         }
-        this.apiCall.getMovieGenres().subscribe((response) => {
-            this.genres = response.genres;
+        this.loadGenres();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['mediaType'] && !changes['mediaType'].firstChange) {
+            this.selectedGenre = '';
+            this.loadGenres();
+        }
+    }
+
+    private loadGenres(): void {
+        const request = this.mediaType === 'tv'
+            ? this.apiCall.getTvGenres()
+            : this.apiCall.getMovieGenres();
+        request.subscribe(response => {
+            this.genres = this.mediaType === 'tv'
+                ? response.genres.filter(genre => !EXCLUDED_TV_GENRE_IDS.has(genre.id))
+                : response.genres;
         });
     }
 

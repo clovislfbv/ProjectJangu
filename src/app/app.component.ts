@@ -12,6 +12,7 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
 export class AppComponent {
     title = 'ProjectJangu';
     isMenuOpen = false;
+    activeMediaType: 'movie' | 'tv' = 'movie';
 
     toggleMenu(): void {
         this.isMenuOpen = !this.isMenuOpen;
@@ -19,5 +20,9 @@ export class AppComponent {
 
     closeMenu(): void {
         this.isMenuOpen = false;
+    }
+
+    selectMediaType(type: 'movie' | 'tv'): void {
+        this.activeMediaType = type;
     }
 }

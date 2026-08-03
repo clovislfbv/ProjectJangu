@@ -25,5 +25,14 @@
         </button>
       </div>
     </div>
+    <div *ngIf="person && tvShows.length" class="filmography">
+      <h2 class="section-title">Séries connues</h2>
+      <div class="movie-list">
+        <button *ngFor="let show of tvShows" class="movie-card" type="button" (click)="openTvShow(show)">
+          <img [src]="'https://image.tmdb.org/t/p/w185' + show.poster_path" [alt]="show.name">
+          <strong>{{ show.name }}</strong><span>{{ show.character }}</span>
+        </button>
+      </div>
+    </div>
   </section>
 </div>

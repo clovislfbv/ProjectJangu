@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
+
+export const EXCLUDED_TV_GENRE_IDS = new Set([16, 10763, 10764, 10766, 10767]);
+
 export interface CastMember {
     cast_id: number;
     character: string;
@@ -36,6 +39,29 @@ export interface PersonMovieCredit {
 export interface PersonMovieCreditsResponse {
     id: number;
     cast: PersonMovieCredit[];
+}
+
+export interface PersonTvCredit {
+    id: number;
+    name: string;
+    character: string;
+    poster_path: string | null;
+    first_air_date: string;
+    vote_count: number;
+    genre_ids: number[];
+    original_name: string;
+    overview: string;
+    backdrop_path: string | null;
+    original_language: string;
+    popularity: number;
+    vote_average: number;
+    origin_country: string[];
+    episode_count?: number;
+}
+
+export interface PersonTvCreditsResponse {
+    id: number;
+    cast: PersonTvCredit[];
 }
 
 export interface PersonSearchResult {
@@ -87,6 +113,41 @@ export interface DiscoverMovieResponse {
     results: Movie[];
     total_pages: number;
     total_results: number;
+}
+
+export interface TvShow {
+    id: number;
+    name: string;
+    original_name: string;
+    overview: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    first_air_date: string;
+    genre_ids: number[];
+    original_language: string;
+    popularity: number;
+    vote_average: number;
+    vote_count: number;
+    origin_country: string[];
+}
+
+export interface PopularTvResponse {
+    page: number;
+    results: TvShow[];
+    total_pages: number;
+    total_results: number;
+}
+
+export interface TvShowDetails extends TvShow {
+    genres: Genre[];
+    episode_run_time: number[];
+    number_of_episodes: number;
+    number_of_seasons: number;
+    status: string;
+    tagline: string;
+    last_air_date: string;
+    networks: Array<{ id: number; name: string; logo_path: string | null }>;
+    seasons: Array<{ id: number; name: string; episode_count: number; air_date: string | null; poster_path: string | null; season_number: number }>;
 }
 
 export interface Genre {
@@ -597,6 +658,93 @@ export class ApiCallService {
         );
     }
 
+    getPopularTvShows(page: number = 1): Observable<PopularTvResponse> {
+        return this.getWithLanguageFallback<PopularTvResponse>(
+            (language) => `${this.tmdbBaseUrl}/tv/popular?include_adult=false&language=${language}&page=${page}`,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    discoverTvShows(
+        sort: string = 'popularity.desc',
+        selectedYear: string = '',
+        selectedGenre: string = '',
+        selectedCountry: string = '',
+        page: number = 1,
+    ): Observable<PopularTvResponse> {
+        const sortMap: Record<string, string> = {
+            'popularity.desc': 'popularity.desc',
+            'title.asc': 'name.asc',
+            'title.desc': 'name.desc',
+        };
+        const yearParam = selectedYear ? `&first_air_date_year=${encodeURIComponent(selectedYear)}` : '';
+        const genreParam = selectedGenre ? `&with_genres=${encodeURIComponent(selectedGenre)}` : '';
+        const countryParam = selectedCountry ? `&with_origin_country=${encodeURIComponent(selectedCountry)}` : '';
+        const sortParam = `&sort_by=${encodeURIComponent(sortMap[sort] ?? 'popularity.desc')}`;
+
+        return this.getWithLanguageFallback<PopularTvResponse>(
+            (language) => `${this.tmdbBaseUrl}/discover/tv?include_adult=false&language=${language}&page=${page}`
+                + yearParam + genreParam + countryParam + sortParam,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    searchTvShows(query: string, selectedYear: string = '', page: number = 1): Observable<PopularTvResponse> {
+        return this.getWithLanguageFallback<PopularTvResponse>(
+            (language) => {
+                const yearParam = selectedYear ? `&first_air_date_year=${encodeURIComponent(selectedYear)}` : '';
+                return `${this.tmdbBaseUrl}/search/tv?include_adult=false&language=${language}&page=${page}&query=${encodeURIComponent(query)}${yearParam}`;
+            },
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getTvShowDetails(tvId: number): Observable<TvShowDetails> {
+        return this.getWithLanguageFallback<TvShowDetails>(
+            (language) => `${this.tmdbBaseUrl}/tv/${tvId}?language=${language}`,
+            (show) => show?.id === tvId && Boolean(show.name),
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getTvShowById(tvId: number): Observable<TvShow> {
+        return this.getWithLanguageFallback<TvShow>(
+            (language) => `${this.tmdbBaseUrl}/tv/${tvId}?language=${language}`,
+            (show) => show?.id === tvId && Boolean(show.name),
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getTvShowCredits(tvId: number): Observable<MovieCreditsResponse> {
+        return this.getWithLanguageFallback<MovieCreditsResponse>(
+            (language) => `${this.tmdbBaseUrl}/tv/${tvId}/credits?language=${language}`,
+            (response) => Array.isArray(response?.cast),
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getTvShowVideos(tvId: number, originalLanguage?: string): Observable<MovieVideosResponse> {
+        return this.getWithLanguageFallback<MovieVideosResponse>(
+            (language) => `${this.tmdbBaseUrl}/tv/${tvId}/videos?language=${language}`,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(originalLanguage),
+        );
+    }
+
+    getTvWatchProviders(tvId: number): Observable<{ providers: WatchProvider[]; link?: string; region: string }> {
+        const preferredRegion = this.getUserRegion() ?? 'US';
+        return this.http.get<MovieWatchProvidersResponse>(`${this.tmdbBaseUrl}/tv/${tvId}/watch/providers`).pipe(
+            map(response => {
+                const entry = response?.results?.[preferredRegion] ?? response?.results?.['US'];
+                return { providers: entry?.flatrate ?? [], link: entry?.link, region: preferredRegion };
+            }),
+            catchError(() => of({ providers: [], region: preferredRegion })),
+        );
+    }
+
     SearchMovies(query: string, selectedYear: string = '', selectedCountry: string = '', page: number = 1): Observable<DiscoverMovieResponse> {
         return this.getWithLanguageFallback<DiscoverMovieResponse>(
             (language) => {
@@ -646,9 +794,25 @@ export class ApiCallService {
         );
     }
 
+    getPersonTvCredits(personId: number): Observable<PersonTvCreditsResponse> {
+        return this.getWithLanguageFallback<PersonTvCreditsResponse>(
+            (language) => `${this.tmdbBaseUrl}/person/${personId}/tv_credits?language=${language}`,
+            (response) => Array.isArray(response?.cast) && response.cast.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
     getMovieGenres(): Observable<GenreResponse> {
         return this.getWithLanguageFallback<GenreResponse>(
             (language) => `${this.tmdbBaseUrl}/genre/movie/list?language=${language}`,
+            (response) => Array.isArray(response?.genres) && response.genres.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
+    getTvGenres(): Observable<GenreResponse> {
+        return this.getWithLanguageFallback<GenreResponse>(
+            (language) => `${this.tmdbBaseUrl}/genre/tv/list?language=${language}`,
             (response) => Array.isArray(response?.genres) && response.genres.length > 0,
             this.getLanguageFallbacks(),
         );

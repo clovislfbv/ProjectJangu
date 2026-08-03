@@ -13,10 +13,12 @@
         <h1>Movie browser</h1>
     </div>
     <nav id="main-menu" class="burger-menu" [class.open]="isMenuOpen" aria-label="Navigation principale">
-        <button type="button" (click)="movieList.showNowPlayingMovies(); closeMenu()">🎬 À l'affiche</button>
-        <button type="button" (click)="movieList.showPopularMovies(); closeMenu()">🔥 Films populaires</button>
+        <button type="button" (click)="selectMediaType('movie'); movieList.showNowPlayingMovies(); closeMenu()">🎬 Films à l'affiche</button>
+        <button type="button" (click)="selectMediaType('movie'); movieList.showPopularMovies(); closeMenu()">🔥 Films populaires</button>
+        <button type="button" (click)="selectMediaType('tv'); movieList.showPopularTvShows(); closeMenu()">📺 Séries populaires</button>
     </nav>
     <app-search-bar
+        [mediaType]="activeMediaType"
         (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre, $event.country)"
     ></app-search-bar>
 </div>

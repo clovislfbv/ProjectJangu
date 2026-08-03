@@ -2,13 +2,14 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } fr
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { MovieComponent } from '../movie/movie.component';
 import { MovieDetailOverlayComponent } from '../movie-detail-overlay/movie-detail-overlay.component';
-import { ApiCallService, DiscoverMovieResponse, Movie, PersonSearchResult } from '../api-call.service';
+import { ApiCallService, DiscoverMovieResponse, EXCLUDED_TV_GENRE_IDS, Movie, PersonSearchResult, PopularTvResponse, TvShow } from '../api-call.service';
 import { map, switchMap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PersonDetailOverlayComponent } from '../person-detail-overlay/person-detail-overlay.component';
 import { CastMember } from '../api-call.service';
+import { TvDetailOverlayComponent } from '../tv-detail-overlay/tv-detail-overlay.component';
 
 interface MovieListCriteria {
     query: string;
@@ -18,12 +19,12 @@ interface MovieListCriteria {
     country: string;
 }
 
-type MovieListView = 'now-playing' | 'popular';
+type MovieListView = 'now-playing' | 'popular' | 'popular-tv';
 
 @Component({
     selector: 'app-movie-list',
     standalone: true,
-    imports: [CommonModule, NgFor, NgIf, MovieComponent, MovieDetailOverlayComponent, PersonDetailOverlayComponent],
+    imports: [CommonModule, NgFor, NgIf, MovieComponent, MovieDetailOverlayComponent, PersonDetailOverlayComponent, TvDetailOverlayComponent],
     templateUrl: './movie-list.component.html',
     styleUrls: ['./movie-list.component.css'],
 })
@@ -33,6 +34,8 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     selectedMovie: Movie | null = null;
     selectedPersonId: number | null = null;
     people: PersonSearchResult[] = [];
+    tvShows: TvShow[] = [];
+    selectedTvShow: TvShow | null = null;
     isLoading: boolean = true;
     loadError: string | null = null;
     private currentPage = 0;
@@ -42,6 +45,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     private movieLinkSubscription?: Subscription;
     private openingMovieFromActorId: number | null = null;
     private currentView: MovieListView = 'now-playing';
+    private activeMediaType: 'movie' | 'tv' = 'movie';
     private criteria: MovieListCriteria = {
         query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '',
     };
@@ -81,9 +85,29 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     ngOnInit() {
         this.movieLinkSubscription = this.route.queryParamMap.subscribe((params) => {
             const rawMovieId = params.get('movie');
+            const rawTvId = params.get('tv');
             const rawActorId = params.get('actor');
             const actorId = Number(rawActorId);
             this.selectedPersonId = rawActorId && Number.isInteger(actorId) && actorId > 0 ? actorId : null;
+
+            if (!rawTvId) {
+                this.selectedTvShow = null;
+            } else {
+                const tvId = Number(rawTvId);
+                if (!Number.isInteger(tvId) || tvId <= 0) {
+                    this.closeTvShow();
+                } else if (this.selectedTvShow?.id !== tvId) {
+                    const loadedShow = this.tvShows.find(show => show.id === tvId);
+                    if (loadedShow) {
+                        this.selectedTvShow = loadedShow;
+                    } else {
+                        this.api_call.getTvShowById(tvId).subscribe({
+                            next: show => this.selectedTvShow = show,
+                            error: () => this.closeTvShow(),
+                        });
+                    }
+                }
+            }
             if (!rawMovieId) {
                 // The URL is the source of truth. In particular, browser Back
                 // from a movie to its actor must clear the hidden movie state
@@ -135,6 +159,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     private resetAndLoad(): void {
         this.requestGeneration++;
         this.movies = [];
+        this.tvShows = [];
         this.loadError = null;
         this.currentPage = 0;
         this.totalPages = 1;
@@ -156,6 +181,48 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
             && alphabetic === 'popularity.desc';
         this.isLoading = true;
         this.loadError = null;
+        if (this.currentView === 'popular-tv') {
+            this.isLoading = true;
+            const hasTvFilters = Boolean(trimmedQuery || year || genre || country || alphabetic !== 'popularity.desc');
+            const tvRequest = trimmedQuery
+                ? this.api_call.searchTvShows(query, year, page)
+                : hasTvFilters
+                    ? this.api_call.discoverTvShows(alphabetic, year, genre, country, page)
+                    : this.api_call.getPopularTvShows(page);
+            tvRequest.subscribe({
+                next: (res: PopularTvResponse) => {
+                    if (generation !== this.requestGeneration) return;
+                    // Genre exclusions apply only while browsing/discovering series.
+                    // An explicit title search must be able to find any requested show.
+                    let scriptedShows = trimmedQuery
+                        ? (res.results ?? [])
+                        : (res.results ?? []).filter(show =>
+                            !show.genre_ids?.some(genreId => EXCLUDED_TV_GENRE_IDS.has(genreId))
+                        );
+                    if (trimmedQuery && genre) {
+                        scriptedShows = scriptedShows.filter(show => show.genre_ids.includes(Number(genre)));
+                    }
+                    if (trimmedQuery && country) {
+                        scriptedShows = scriptedShows.filter(show => show.origin_country?.includes(country));
+                    }
+                    if (trimmedQuery && alphabetic !== 'popularity.desc') {
+                        scriptedShows.sort((a, b) => alphabetic === 'title.asc'
+                            ? a.name.localeCompare(b.name)
+                            : b.name.localeCompare(a.name));
+                    }
+                    this.tvShows = [...this.tvShows, ...scriptedShows]
+                        .filter((show, index, all) => all.findIndex(item => item.id === show.id) === index);
+                    this.currentPage = res.page || page;
+                    this.totalPages = Math.max(this.currentPage, res.total_pages || 1);
+                    this.isLoading = false;
+                },
+                error: () => {
+                    this.isLoading = false;
+                    this.loadError = 'Impossible de charger les séries populaires.';
+                },
+            });
+            return;
+        }
         const request = this.currentView === 'popular' && isDefaultView
             ? this.api_call.getPopularMovies(page)
             : country
@@ -208,7 +275,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     /** Called by the search bar */
     search(query: string, alphabeticSelect: string = 'popularity.desc', selectedYear: string = '', selectedGenre: string = '', selectedCountry: string = '') {
-        this.currentView = 'now-playing';
+        this.currentView = this.activeMediaType === 'tv' ? 'popular-tv' : 'now-playing';
         this.criteria = {
             query,
             alphabetic: alphabeticSelect,
@@ -218,7 +285,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         };
         this.people = [];
         const trimmedQuery = query.trim();
-        if (trimmedQuery) {
+        if (trimmedQuery && this.activeMediaType === 'movie') {
             this.api_call.SearchPersons(trimmedQuery).subscribe({
                 next: response => this.people = (response.results ?? [])
                     .filter(person => person.known_for_department === 'Acting')
@@ -230,6 +297,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     showPopularMovies(): void {
+        this.activeMediaType = 'movie';
         this.currentView = 'popular';
         this.criteria = { query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '' };
         this.people = [];
@@ -237,10 +305,43 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     showNowPlayingMovies(): void {
+        this.activeMediaType = 'movie';
         this.currentView = 'now-playing';
         this.criteria = { query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '' };
         this.people = [];
         this.resetAndLoad();
+    }
+
+    showPopularTvShows(): void {
+        this.activeMediaType = 'tv';
+        this.currentView = 'popular-tv';
+        this.people = [];
+        this.resetAndLoad();
+    }
+
+    selectTvShow(show: TvShow): void {
+        this.selectedTvShow = show;
+        this.selectedMovie = null;
+        this.selectedPersonId = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tv: show.id, movie: null, actor: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    closeTvShow(): void {
+        this.selectedTvShow = null;
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tv: null },
+            queryParamsHandling: 'merge',
+        });
+    }
+
+    openActorFromTv(actor: CastMember): void {
+        this.selectedTvShow = null;
+        this.openActor(actor);
     }
 
     onSelect(movie: Movie) {
@@ -269,7 +370,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedMovie = null;
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { actor: actor.id, movie: null },
+            queryParams: { actor: actor.id, movie: null, tv: null },
             queryParamsHandling: 'merge',
         });
     }
@@ -279,7 +380,7 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedMovie = null;
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { actor: person.id, movie: null },
+            queryParams: { actor: person.id, movie: null, tv: null },
             queryParamsHandling: 'merge',
         });
     }
@@ -315,5 +416,9 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.openingMovieFromActorId = null;
             },
         });
+    }
+
+    openTvShowFromActor(show: TvShow): void {
+        this.selectTvShow(show);
     }
 }
