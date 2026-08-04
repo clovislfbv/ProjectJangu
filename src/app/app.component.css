@@ -59,6 +59,7 @@ body {
     align-items: center;
     justify-content: center;
     width: 100%;
+    z-index: 2;
 }
 
 .burger-button {
@@ -71,6 +72,7 @@ body {
     border-radius: 10px;
     background: #2d2d2d;
     cursor: pointer;
+    z-index: 2;
 }
 
 .burger-button span {
@@ -97,6 +99,13 @@ body {
     border-radius: 12px;
     background: #292929;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    z-index: 10;
+}
+
+.header app-search-bar {
+    position: relative;
+    z-index: 1;
+    width: 100%;
 }
 
 .burger-menu.open {
