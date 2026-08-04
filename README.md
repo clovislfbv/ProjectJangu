@@ -19,6 +19,26 @@ To start a local server, run:
 ng serve
 ```
 
+## Progressive Web App (PWA)
+
+MovieBrowser peut être installé depuis Chrome, Edge et Safari. Le service
+worker est uniquement activé dans un build de production.
+
+Pour tester localement la version installable et le mode hors ligne :
+
+```bash
+npm run build
+npx http-server dist/ProjectJangu/browser -p 8080 -c-1
+```
+
+Ouvrez ensuite `http://localhost:8080`, rechargez une fois la page pour laisser
+le service worker prendre le contrôle, puis utilisez l'option **Installer
+MovieBrowser** du navigateur. Dans Safari sur iPhone/iPad, utilisez
+**Partager > Sur l'écran d'accueil**.
+
+L'interface et les ressources déjà chargées restent disponibles hors ligne.
+Les recherches et contenus distants nécessitent toutefois une connexion aux API.
+
 ## API keys from environment variables
 
 Do not commit real API keys in `src/environments/environment.ts`.

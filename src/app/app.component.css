@@ -128,6 +128,17 @@ body {
     background: #3b3b3b;
 }
 
+/* Extra top spacing only when the site runs as an installed PWA. */
+@media (display-mode: standalone) {
+    .header {
+        padding-top: calc(1rem + max(12px, env(safe-area-inset-top)));
+    }
+
+    .body {
+        margin-top: calc(150px + max(12px, env(safe-area-inset-top)));
+    }
+}
+
 /* Tablet styles */
 @media (max-width: 1024px) {
     .header h1 {
@@ -157,6 +168,16 @@ body {
         flex: 1;
         padding: 0 0.25rem;
         margin-top: 220px;
+    }
+
+    @media (display-mode: standalone) {
+        .header {
+            padding-top: calc(1rem + max(12px, env(safe-area-inset-top)));
+        }
+
+        .body {
+            margin-top: calc(220px + max(12px, env(safe-area-inset-top)));
+        }
     }
 }
 
@@ -189,5 +210,15 @@ body {
     .body {
         padding: 0 0.1rem;
         margin-top: 170px;
+    }
+
+    @media (display-mode: standalone) {
+        .header {
+            padding-top: calc(0.5rem + max(12px, env(safe-area-inset-top)));
+        }
+
+        .body {
+            margin-top: calc(170px + max(12px, env(safe-area-inset-top)));
+        }
     }
 }
