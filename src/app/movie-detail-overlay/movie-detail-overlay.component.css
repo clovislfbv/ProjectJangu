@@ -390,3 +390,20 @@
         min-height: 250px;
     }
 }
+
+/* Keep the detail panel below the status bar when the app runs as a PWA. */
+@media (display-mode: standalone) and (max-width: 768px) {
+    .overlay-backdrop {
+        padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+    }
+
+    .overlay-content {
+        margin-top: 0;
+        min-height: 0;
+        padding-bottom: 1rem;
+    }
+
+    .cast-list {
+        padding-bottom: 0.25rem;
+    }
+}

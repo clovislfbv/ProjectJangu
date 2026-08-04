@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "MovieBrowser",
-  "short_name": "Movies",
+  "name": "Clovis TV",
+  "short_name": "Clovis TV",
   "description": "Recherchez des films, séries et personnalités du cinéma.",
   "lang": "fr-FR",
   "display": "standalone",

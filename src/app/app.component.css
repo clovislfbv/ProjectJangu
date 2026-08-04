@@ -176,7 +176,7 @@ body {
         }
 
         .body {
-            margin-top: calc(220px + max(12px, env(safe-area-inset-top)));
+            margin-top: calc(205px + max(12px, env(safe-area-inset-top)));
         }
     }
 }
@@ -218,7 +218,7 @@ body {
         }
 
         .body {
-            margin-top: calc(170px + max(12px, env(safe-area-inset-top)));
+            margin-top: calc(155px + max(12px, env(safe-area-inset-top)));
         }
     }
 }
