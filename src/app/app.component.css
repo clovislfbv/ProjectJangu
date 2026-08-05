@@ -4,6 +4,8 @@ app-movie-list {
     width: 100%;
 }
 
+.view-hidden { display: none; }
+
 html,
 body {
     overflow-x: hidden;
@@ -127,6 +129,7 @@ body {
 .burger-menu button:hover {
     background: #3b3b3b;
 }
+
 
 /* Extra top spacing only when the site runs as an installed PWA. */
 @media (display-mode: standalone) {

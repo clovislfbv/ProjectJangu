@@ -38,4 +38,17 @@ describe('AppComponent', () => {
     expect(fixture.componentInstance.isMenuOpen).toBeTrue();
     expect(fixture.nativeElement.querySelector('.burger-menu')?.classList).toContain('open');
   });
+
+  it('should keep the feedback view open and unlock hidden links for the special feedback', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    spyOn(localStorage, 'setItem');
+    app.showFeedback();
+
+    app.handleFeedbackSubmission(true);
+
+    expect(localStorage.setItem).toHaveBeenCalledWith('projectJanguHiddenLinksUnlocked', 'true');
+    expect(app.areHiddenLinksUnlocked).toBeTrue();
+    expect(app.activeView).toBe('feedback');
+  });
 });

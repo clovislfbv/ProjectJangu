@@ -1,0 +1,23 @@
+<section class="feedback-page" aria-labelledby="feedback-title">
+    <div class="feedback-card">
+        <span class="feedback-icon" aria-hidden="true">💬</span>
+        <h2 id="feedback-title">Donner votre avis</h2>
+        <p>Votre avis nous aide à améliorer l’application.</p>
+
+        <form (ngSubmit)="submitFeedback()">
+            <label for="feedback-text">Votre avis</label>
+            <textarea
+                id="feedback-text"
+                name="feedback"
+                rows="6"
+                placeholder="Écrivez votre avis sur l’application…"
+                [(ngModel)]="feedback"
+            ></textarea>
+            <button type="submit" [disabled]="!feedback.trim()">Envoyer mon avis</button>
+        </form>
+
+        @if (hasSubmitted) {
+            <p class="thank-you" role="status">Merci pour votre avis !</p>
+        }
+    </div>
+</section>

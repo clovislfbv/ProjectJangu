@@ -44,7 +44,7 @@
                 </ng-template>
 
                 <h2 class="overview-label">Streaming</h2>
-                <div *ngIf="streamingLinksLoaded && streamingLinks.length > 0; else noProviders" class="providers">
+                <div *ngIf="streamingLinksLoaded && (streamingLinks.length > 0 || hiddenLinksUnlocked); else noProviders" class="providers">
                     <a
                         *ngFor="let item of streamingLinks"
                         class="provider-pill"
@@ -59,6 +59,20 @@
                             [alt]="item.name"
                         />
                         <span>{{ item.name }}</span>
+                    </a>
+                    <a
+                        *ngIf="hiddenLinksUnlocked"
+                        class="provider-pill"
+                        [href]="'https://movix.fun/movie/' + movie.id"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <img
+                            class="provider-logo"
+                            src="https://movix.fun/movix.png"
+                            alt="Movix"
+                        />
+                        <span>Movix</span>
                     </a>
                 </div>
                 <ng-template #noProviders>

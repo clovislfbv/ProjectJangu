@@ -16,12 +16,18 @@
         <button type="button" (click)="selectMediaType('movie'); movieList.showNowPlayingMovies(); closeMenu()">🎬 Films à l'affiche</button>
         <button type="button" (click)="selectMediaType('movie'); movieList.showPopularMovies(); closeMenu()">🔥 Films populaires</button>
         <button type="button" (click)="selectMediaType('tv'); movieList.showPopularTvShows(); closeMenu()">📺 Séries populaires</button>
+        <button type="button" (click)="showFeedback()">💬 Donner un avis</button>
     </nav>
-    <app-search-bar
-        [mediaType]="activeMediaType"
-        (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre, $event.country)"
-    ></app-search-bar>
+    @if (activeView === 'catalog') {
+        <app-search-bar
+            [mediaType]="activeMediaType"
+            (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre, $event.country)"
+        ></app-search-bar>
+    }
 </div>
 <div class="body">
-    <app-movie-list #movieList></app-movie-list>
+    <app-movie-list #movieList [class.view-hidden]="activeView !== 'catalog'"></app-movie-list>
+    @if (activeView === 'feedback') {
+        <app-feedback (submitted)="handleFeedbackSubmission($event)"></app-feedback>
+    }
 </div>

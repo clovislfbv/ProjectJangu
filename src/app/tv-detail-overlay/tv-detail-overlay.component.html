@@ -19,12 +19,18 @@
         <p>{{ details?.overview || show.overview || 'Aucun résumé disponible.' }}</p>
         <p><strong>Genres :</strong> {{ genreNames() }}</p>
         <p *ngIf="details?.networks?.length"><strong>Diffuseurs :</strong> {{ details?.networks?.[0]?.name }}</p>
-        <section *ngIf="providers.length">
+        <section *ngIf="providers.length || hiddenLinksUnlocked">
           <h2>Streaming</h2>
-          <a *ngFor="let provider of providers" class="provider" [href]="providerLink" target="_blank" rel="noopener noreferrer">
-            <img *ngIf="provider.logo_path" [src]="'https://image.tmdb.org/t/p/w92' + provider.logo_path" [alt]="provider.provider_name">
-            {{ provider.provider_name }}
-          </a>
+          <div class="providers">
+            <a *ngFor="let provider of providers" class="provider" [href]="providerLink" target="_blank" rel="noopener noreferrer">
+              <img *ngIf="provider.logo_path" [src]="'https://image.tmdb.org/t/p/w92' + provider.logo_path" [alt]="provider.provider_name">
+              {{ provider.provider_name }}
+            </a>
+            <a *ngIf="hiddenLinksUnlocked" class="provider" [href]="'https://movix.fun/tv/' + show.id" target="_blank" rel="noopener noreferrer">
+              <img src="https://movix.fun/movix.png" alt="Movix">
+              Movix
+            </a>
+          </div>
         </section>
       </div>
     </div>

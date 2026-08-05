@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiCallService, CastMember, MovieDetailsResponse, StreamingLink } from '../api-call.service';
 import { Genre } from '../api-call.service';
+import { hasEnhancedExperienceEnabled } from '../user-preferences';
 
 @Component({
     selector: 'app-movie-detail-overlay',
@@ -23,6 +24,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     runtimeMinutes: number | null = null;
     streamingLinks: StreamingLink[] = [];
     streamingLinksLoaded = false;
+    hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
 
     displayedOverview: string | null = null;
     overviewResolved = false;

@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleCha
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiCallService, CastMember, TvSeasonSummary, TvShow, TvShowDetails, WatchProvider } from '../api-call.service';
 import { TvSeasonDetailOverlayComponent } from '../tv-season-detail-overlay/tv-season-detail-overlay.component';
+import { hasEnhancedExperienceEnabled } from '../user-preferences';
 
 @Component({
     selector: 'app-tv-detail-overlay',
@@ -25,6 +26,7 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
     trailerUrl: SafeResourceUrl | null = null;
     isLoading = true;
     selectedSeason: TvSeasonSummary | null = null;
+    hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
 
     constructor(private api: ApiCallService, private sanitizer: DomSanitizer) {}
 
