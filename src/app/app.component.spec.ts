@@ -39,6 +39,16 @@ describe('AppComponent', () => {
     expect(fixture.nativeElement.querySelector('.burger-menu')?.classList).toContain('open');
   });
 
+  it('should place upcoming movies before popular TV shows in the burger menu', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const menuButtons = fixture.nativeElement.querySelectorAll('.burger-menu button') as NodeListOf<HTMLButtonElement>;
+    const labels = Array.from(menuButtons).map(button => button.textContent?.trim());
+
+    expect(labels.indexOf('🍿 Films à venir')).toBeGreaterThan(-1);
+    expect(labels.indexOf('🍿 Films à venir')).toBeLessThan(labels.indexOf('📺 Séries populaires'));
+  });
+
   it('should keep the feedback view open and unlock hidden links for the special feedback', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;

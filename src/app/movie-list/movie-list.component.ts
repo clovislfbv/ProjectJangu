@@ -19,7 +19,7 @@ interface MovieListCriteria {
     country: string;
 }
 
-type MovieListView = 'now-playing' | 'popular' | 'popular-tv';
+type MovieListView = 'now-playing' | 'popular' | 'upcoming' | 'popular-tv';
 
 @Component({
     selector: 'app-movie-list',
@@ -233,6 +233,8 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         const request = this.currentView === 'popular' && isDefaultView
             ? this.api_call.getPopularMovies(page)
+            : this.currentView === 'upcoming' && isDefaultView
+                ? this.api_call.getUpcomingMovies(page)
             : country
             ? this.api_call.DiscoverMovies(alphabetic, year, genre, country, page)
             : trimmedQuery
@@ -315,6 +317,14 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
     showNowPlayingMovies(): void {
         this.activeMediaType = 'movie';
         this.currentView = 'now-playing';
+        this.criteria = { query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '' };
+        this.people = [];
+        this.resetAndLoad();
+    }
+
+    showUpcomingMovies(): void {
+        this.activeMediaType = 'movie';
+        this.currentView = 'upcoming';
         this.criteria = { query: '', alphabetic: 'popularity.desc', year: '', genre: '', country: '' };
         this.people = [];
         this.resetAndLoad();

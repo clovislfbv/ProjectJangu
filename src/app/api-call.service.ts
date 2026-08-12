@@ -685,6 +685,16 @@ export class ApiCallService {
         );
     }
 
+    getUpcomingMovies(page: number = 1): Observable<DiscoverMovieResponse> {
+        const region = this.getUserRegion();
+        const regionParam = region ? `&region=${encodeURIComponent(region)}` : '';
+        return this.getWithLanguageFallback<DiscoverMovieResponse>(
+            (language) => `${this.tmdbBaseUrl}/movie/upcoming?include_adult=false&language=${encodeURIComponent(language)}&page=${page}${regionParam}`,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
     getPopularTvShows(page: number = 1): Observable<PopularTvResponse> {
         return this.getWithLanguageFallback<PopularTvResponse>(
             (language) => `${this.tmdbBaseUrl}/tv/popular?include_adult=false&language=${language}&page=${page}`,

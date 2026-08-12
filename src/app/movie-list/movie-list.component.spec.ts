@@ -25,6 +25,7 @@ describe('MovieListComponent', () => {
         apiCall = jasmine.createSpyObj<ApiCallService>('ApiCallService', [
             'DiscoverMovies',
             'getPopularMovies',
+            'getUpcomingMovies',
             'getPopularTvShows',
             'discoverTvShows',
             'searchTvShows',
@@ -37,6 +38,7 @@ describe('MovieListComponent', () => {
         ]);
         apiCall.DiscoverMovies.and.returnValue(of(response(1, 3, [movie(1)])));
         apiCall.getPopularMovies.and.returnValue(of(response(1, 1, [movie(100)])));
+        apiCall.getUpcomingMovies.and.returnValue(of(response(1, 1, [movie(101)])));
         apiCall.getPopularTvShows.and.returnValue(of({ page: 1, total_pages: 1, total_results: 2, results: [{
             id: 200, name: 'Popular show', original_name: 'Popular show', overview: '', poster_path: null,
             backdrop_path: null, first_air_date: '2026-01-01', genre_ids: [], original_language: 'en',
@@ -124,6 +126,13 @@ describe('MovieListComponent', () => {
 
         expect(apiCall.getPopularMovies).toHaveBeenCalledWith(1);
         expect(component.movies.map(({ id }) => id)).toEqual([100]);
+    });
+
+    it('loads upcoming movies from the dedicated endpoint', () => {
+        component.showUpcomingMovies();
+
+        expect(apiCall.getUpcomingMovies).toHaveBeenCalledWith(1);
+        expect(component.movies.map(({ id }) => id)).toEqual([101]);
     });
 
     it('loads popular TV shows from the dedicated endpoint', () => {
