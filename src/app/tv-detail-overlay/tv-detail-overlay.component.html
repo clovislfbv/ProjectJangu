@@ -1,5 +1,6 @@
 <div class="overlay-backdrop" (click)="closeOverlay()">
   <article class="overlay-content" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="show.name">
+    <app-share-button class="share-action" entityType="tv" [entityId]="show.id"></app-share-button>
     <button class="close-btn" type="button" aria-label="Fermer" (click)="closeOverlay()">✕</button>
     <p *ngIf="isLoading" class="loading">Chargement des informations…</p>
     <div class="hero">

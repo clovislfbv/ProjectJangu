@@ -44,6 +44,12 @@
     color: #ff4444;
 }
 
+.share-action {
+    position: absolute;
+    top: 1rem;
+    right: 3.4rem;
+}
+
 /* Layout */
 .detail-container {
     display: flex;
@@ -332,6 +338,11 @@
         top: 0.5rem;
         right: 0.5rem;
         font-size: 1.25rem;
+    }
+
+    .share-action {
+        top: .5rem;
+        right: 2.7rem;
     }
     
     .detail-poster {

@@ -4,7 +4,7 @@ import { MovieComponent } from '../movie/movie.component';
 import { MovieDetailOverlayComponent } from '../movie-detail-overlay/movie-detail-overlay.component';
 import { ApiCallService, DiscoverMovieResponse, EXCLUDED_TV_GENRE_IDS, Movie, PersonSearchResult, PopularTvResponse, TvShow } from '../api-call.service';
 import { map, switchMap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PersonDetailOverlayComponent } from '../person-detail-overlay/person-detail-overlay.component';
@@ -231,9 +231,10 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
             });
             return;
         }
+        const isUpcomingView = this.currentView === 'upcoming' && isDefaultView;
         const request = this.currentView === 'popular' && isDefaultView
             ? this.api_call.getPopularMovies(page)
-            : this.currentView === 'upcoming' && isDefaultView
+            : isUpcomingView
                 ? this.api_call.getUpcomingMovies(page)
             : country
             ? this.api_call.DiscoverMovies(alphabetic, year, genre, country, page)
@@ -243,8 +244,11 @@ export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
 
         request.pipe(
             // Every API page goes through the same content filter before it is appended,
-            // whether it comes from the default view, filters, or text search.
-            switchMap((res: DiscoverMovieResponse) => this.filterResponsePage(res, isDefaultView)),
+            // except the upcoming test view, which intentionally displays TMDB's
+            // raw result set so its advertised total can be verified.
+            switchMap((res: DiscoverMovieResponse) => isUpcomingView
+                ? of(res)
+                : this.filterResponsePage(res, isDefaultView)),
         ).subscribe({
             next: (res: DiscoverMovieResponse) => {
                 if (generation !== this.requestGeneration) return;

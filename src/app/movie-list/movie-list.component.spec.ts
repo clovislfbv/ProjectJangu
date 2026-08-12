@@ -129,10 +129,15 @@ describe('MovieListComponent', () => {
     });
 
     it('loads upcoming movies from the dedicated endpoint', () => {
+        apiCall.excludeEroticMovies.calls.reset();
+        apiCall.excludeMoviesShorterThan.calls.reset();
+
         component.showUpcomingMovies();
 
         expect(apiCall.getUpcomingMovies).toHaveBeenCalledWith(1);
         expect(component.movies.map(({ id }) => id)).toEqual([101]);
+        expect(apiCall.excludeEroticMovies).not.toHaveBeenCalled();
+        expect(apiCall.excludeMoviesShorterThan).not.toHaveBeenCalled();
     });
 
     it('loads popular TV shows from the dedicated endpoint', () => {

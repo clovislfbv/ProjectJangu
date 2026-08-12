@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { ApiCallService, EXCLUDED_TV_GENRE_IDS, PersonDetails, PersonMovieCredit, PersonTvCredit, TvShow } from '../api-call.service';
+import { ShareButtonComponent } from '../share-button/share-button.component';
 
 @Component({
     selector: 'app-person-detail-overlay',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, ShareButtonComponent],
     templateUrl: './person-detail-overlay.component.html',
     styleUrls: ['./person-detail-overlay.component.css'],
 })

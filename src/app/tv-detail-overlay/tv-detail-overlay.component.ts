@@ -4,11 +4,12 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiCallService, CastMember, TvSeasonSummary, TvShow, TvShowDetails, WatchProvider } from '../api-call.service';
 import { TvSeasonDetailOverlayComponent } from '../tv-season-detail-overlay/tv-season-detail-overlay.component';
 import { hasEnhancedExperienceEnabled } from '../user-preferences';
+import { ShareButtonComponent } from '../share-button/share-button.component';
 
 @Component({
     selector: 'app-tv-detail-overlay',
     standalone: true,
-    imports: [CommonModule, TvSeasonDetailOverlayComponent],
+    imports: [CommonModule, TvSeasonDetailOverlayComponent, ShareButtonComponent],
     templateUrl: './tv-detail-overlay.component.html',
     styleUrls: ['./tv-detail-overlay.component.css'],
 })

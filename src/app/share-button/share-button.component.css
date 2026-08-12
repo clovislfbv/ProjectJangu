@@ -1,0 +1,58 @@
+.share-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: .2rem;
+    border: 0;
+    background: transparent;
+    color: #f0f0f0;
+    cursor: pointer;
+    transition: color .2s ease, transform .2s ease;
+}
+
+.share-button:hover,
+.share-button:focus-visible {
+    color: #ffd54f;
+    transform: scale(1.08);
+    outline: none;
+}
+
+.share-button svg {
+    width: 1.55rem;
+    height: 1.55rem;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.share-button path {
+    fill: none;
+    stroke: currentColor;
+}
+
+.share-notification {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    z-index: 3000;
+    max-width: calc(100vw - 2rem);
+    padding: .75rem 1rem;
+    border-radius: 9px;
+    background: #167342;
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
+    font-weight: 600;
+    text-align: center;
+    transform: translateX(-50%);
+    animation: share-notification-in .2s ease-out;
+}
+
+@keyframes share-notification-in {
+    from { opacity: 0; transform: translate(-50%, .5rem); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}

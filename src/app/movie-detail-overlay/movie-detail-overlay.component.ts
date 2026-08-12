@@ -4,10 +4,11 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiCallService, CastMember, MovieDetailsResponse, StreamingLink } from '../api-call.service';
 import { Genre } from '../api-call.service';
 import { hasEnhancedExperienceEnabled } from '../user-preferences';
+import { ShareButtonComponent } from '../share-button/share-button.component';
 
 @Component({
     selector: 'app-movie-detail-overlay',
-    imports: [CommonModule],
+    imports: [CommonModule, ShareButtonComponent],
     standalone: true,
     templateUrl: './movie-detail-overlay.component.html',
     styleUrls: ['./movie-detail-overlay.component.css'],

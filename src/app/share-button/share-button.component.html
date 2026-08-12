@@ -1,0 +1,10 @@
+<button class="share-button" type="button" (click)="copyLink()" aria-label="Copier le lien de cette fiche">
+    <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+        <path d="M8 9.5H5.5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2H16"></path>
+        <path d="M12 14V3M8.5 6.5 12 3l3.5 3.5"></path>
+    </svg>
+</button>
+
+<div *ngIf="notificationVisible" class="share-notification" role="status" aria-live="polite">
+    Lien copié dans le presse-papiers
+</div>

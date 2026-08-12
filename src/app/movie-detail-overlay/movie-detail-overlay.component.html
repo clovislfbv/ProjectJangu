@@ -1,5 +1,6 @@
 <div class="overlay-backdrop" (click)="closeOverlay()">
     <div class="overlay-content" (click)="$event.stopPropagation()">
+        <app-share-button class="share-action" entityType="movie" [entityId]="movie.id"></app-share-button>
         <button class="close-btn" (click)="closeOverlay()">✕</button>
 
         <div class="detail-container">
