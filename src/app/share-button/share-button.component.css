@@ -35,6 +35,21 @@
     stroke: currentColor;
 }
 
+@media (max-width: 768px) {
+    .share-button {
+        width: 2.75rem;
+        height: 2.75rem;
+        padding: .55rem;
+        border-radius: 50%;
+        background: #2d2d2d;
+    }
+
+    .share-button svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
+
 .share-notification {
     position: fixed;
     left: 50%;

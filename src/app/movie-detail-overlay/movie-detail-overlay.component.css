@@ -268,11 +268,32 @@
     }
     
     .overlay-content {
-        padding: 1rem;
+        padding: 4.25rem 1rem 1rem;
         margin: 1rem 0;
         max-height: none;
         min-height: calc(100vh - 2rem);
         overflow-y: visible;
+    }
+
+    .close-btn,
+    .share-action {
+        top: .75rem;
+    }
+
+    .close-btn {
+        right: .75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        padding: 0;
+        border-radius: 50%;
+        background: #2d2d2d;
+    }
+
+    .share-action {
+        right: 4rem;
     }
     
     .detail-container {
@@ -325,7 +346,7 @@
     }
     
     .overlay-content {
-        padding: 0.75rem;
+        padding: 4rem .75rem 4rem;
         padding-bottom: 4rem;
         border-radius: 8px;
         margin: 0.5rem 0;
@@ -335,14 +356,14 @@
     }
     
     .close-btn {
-        top: 0.5rem;
-        right: 0.5rem;
+        top: .625rem;
+        right: .625rem;
         font-size: 1.25rem;
     }
 
     .share-action {
-        top: .5rem;
-        right: 2.7rem;
+        top: .625rem;
+        right: 3.875rem;
     }
     
     .detail-poster {
