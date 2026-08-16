@@ -23,6 +23,8 @@
         <app-search-bar
             [mediaType]="activeMediaType"
             (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre, $event.country)"
+            (selectMovie)="movieList.onSelect($event)"
+            (selectPerson)="movieList.openPerson($event)"
         ></app-search-bar>
     }
 </div>
