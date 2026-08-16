@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ApiCallService, CastMember, TvSeasonSummary, TvShow, TvShowDetails, WatchProvider } from '../api-call.service';
+import { ApiCallService, CastMember, EXCLUDED_TV_GENRE_IDS, TvSeasonSummary, TvShow, TvShowDetails, WatchProvider } from '../api-call.service';
 import { TvSeasonDetailOverlayComponent } from '../tv-season-detail-overlay/tv-season-detail-overlay.component';
 import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { ShareButtonComponent } from '../share-button/share-button.component';
@@ -20,11 +20,14 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
     @Output() selectActor = new EventEmitter<CastMember>();
     @Output() selectSeason = new EventEmitter<number>();
     @Output() closeSeasonDetails = new EventEmitter<void>();
+    @Output() selectTvShow = new EventEmitter<TvShow>();
     details: TvShowDetails | null = null;
     cast: CastMember[] = [];
     providers: WatchProvider[] = [];
     providerLink?: string;
     trailerUrl: SafeResourceUrl | null = null;
+    recommendations: TvShow[] = [];
+    recommendationsLoaded = false;
     isLoading = true;
     selectedSeason: TvSeasonSummary | null = null;
     hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
@@ -59,6 +62,33 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
             this.providers = result.providers;
             this.providerLink = result.link;
         });
+        this.loadRecommendations(this.show.id);
+    }
+
+    private loadRecommendations(tvId: number): void {
+        this.recommendations = [];
+        this.recommendationsLoaded = false;
+        this.api.getTvRecommendations(tvId).subscribe({
+            next: response => {
+                if (this.show?.id !== tvId) return;
+
+                const seenIds = new Set<number>([tvId]);
+                this.recommendations = (response.results ?? [])
+                    .filter(show => {
+                        const isExcludedGenre = show.genre_ids?.some(id => EXCLUDED_TV_GENRE_IDS.has(id));
+                        if (!show.poster_path || isExcludedGenre || seenIds.has(show.id)) return false;
+                        seenIds.add(show.id);
+                        return true;
+                    })
+                    .slice(0, 12);
+                this.recommendationsLoaded = true;
+            },
+            error: () => {
+                if (this.show?.id !== tvId) return;
+                this.recommendations = [];
+                this.recommendationsLoaded = true;
+            },
+        });
     }
 
     private openSeasonFromInput(): void {
@@ -89,5 +119,6 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
     }
     genreNames(): string { return this.details?.genres?.map(genre => genre.name).join(', ') || 'Non renseigné'; }
     runtime(): string { return this.details?.episode_run_time?.[0] ? `${this.details.episode_run_time[0]} min / épisode` : 'Durée inconnue'; }
+    releaseYear(firstAirDate: string | null | undefined): string { return firstAirDate?.slice(0, 4) || 'Date inconnue'; }
     get castIds(): number[] { return this.cast.map(actor => actor.id); }
 }

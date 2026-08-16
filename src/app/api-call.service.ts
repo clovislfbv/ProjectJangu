@@ -711,6 +711,14 @@ export class ApiCallService {
         );
     }
 
+    getTvRecommendations(tvId: number, page: number = 1): Observable<PopularTvResponse> {
+        return this.getWithLanguageFallback<PopularTvResponse>(
+            (language) => `${this.tmdbBaseUrl}/tv/${tvId}/recommendations?language=${language}&page=${page}`,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
     discoverTvShows(
         sort: string = 'popularity.desc',
         selectedYear: string = '',

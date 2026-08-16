@@ -38,6 +38,16 @@
     <section *ngIf="trailerUrl" class="trailer"><h2>Bande-annonce</h2><iframe [src]="trailerUrl" title="Bande-annonce de la série" allowfullscreen></iframe></section>
     <section *ngIf="details?.seasons?.length"><h2>Saisons</h2><div class="seasons"><button *ngFor="let season of details?.seasons" class="season" type="button" (click)="openSeason(season)" [attr.aria-label]="'Voir les détails de ' + season.name"><strong>{{ season.name }}</strong><span>{{ season.episode_count }} épisodes</span><small>{{ season.air_date | date:'yyyy' }}</small><span class="season-link">Voir les épisodes →</span></button></div></section>
     <section *ngIf="cast.length"><h2>Distribution</h2><div class="cast"><button *ngFor="let actor of cast" class="actor" type="button" (click)="openActor(actor)" [attr.aria-label]="'Voir le profil de ' + actor.name"><img [src]="actor.profile_path ? 'https://image.tmdb.org/t/p/w185' + actor.profile_path : '/assets/placeholder-profile.png'" [alt]="actor.name"><strong>{{ actor.name }}</strong><small>{{ actor.character }}</small></button></div></section>
+    <section *ngIf="recommendations.length" class="recommendations" aria-label="Séries similaires">
+      <h2>Séries similaires</h2>
+      <div class="recommendation-list">
+        <button *ngFor="let recommendation of recommendations" class="recommendation" type="button" (click)="selectTvShow.emit(recommendation)" [attr.aria-label]="'Voir les détails de ' + recommendation.name">
+          <img [src]="'https://image.tmdb.org/t/p/w342' + recommendation.poster_path" [alt]="recommendation.name" loading="lazy">
+          <strong>{{ recommendation.name }}</strong>
+          <small>{{ releaseYear(recommendation.first_air_date) }}<ng-container *ngIf="recommendation.vote_average > 0"> · ⭐ {{ recommendation.vote_average | number:'1.1-1' }}</ng-container></small>
+        </button>
+      </div>
+    </section>
   </article>
   <app-tv-season-detail-overlay *ngIf="selectedSeason" [tvId]="show.id" [showName]="details?.name || show.name" [season]="selectedSeason" [seriesCastIds]="castIds" (close)="closeSeason()" (selectActor)="openActorFromSeason($event)"></app-tv-season-detail-overlay>
 </div>
