@@ -24,6 +24,7 @@
             [mediaType]="activeMediaType"
             (search)="movieList.search($event.query, $event.alphabetic, $event.year, $event.genre, $event.country)"
             (selectMovie)="movieList.onSelect($event)"
+            (selectTvShow)="movieList.selectTvShow($event)"
             (selectPerson)="movieList.openPerson($event)"
         ></app-search-bar>
     }

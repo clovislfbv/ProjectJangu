@@ -1,12 +1,13 @@
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiCallService, EXCLUDED_TV_GENRE_IDS, Genre, Movie, PersonSearchResult } from '../api-call.service';
+import { ApiCallService, EXCLUDED_TV_GENRE_IDS, Genre, Movie, PersonSearchResult, TvShow } from '../api-call.service';
 import { forkJoin, of, Subject } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 
 export type SearchSuggestion =
     | { type: 'movie'; movie: Movie }
+    | { type: 'tv'; show: TvShow }
     | { type: 'person'; person: PersonSearchResult };
 
 @Component({
@@ -26,6 +27,7 @@ export class SearchBarComponent implements OnInit, OnChanges, OnDestroy {
         country: string;
     }>();
     @Output() selectMovie = new EventEmitter<Movie>();
+    @Output() selectTvShow = new EventEmitter<TvShow>();
     @Output() selectPerson = new EventEmitter<PersonSearchResult>();
 
     searchText: string = '';
@@ -71,19 +73,24 @@ export class SearchBarComponent implements OnInit, OnChanges, OnDestroy {
             debounceTime(300),
             distinctUntilChanged(),
             switchMap(query => {
-                if (this.mediaType !== 'movie' || query.length < 2) {
+                if (query.length < 2) {
                     return of([] as SearchSuggestion[]);
                 }
                 this.suggestionsLoading = true;
                 return forkJoin({
                     movies: this.apiCall.SearchMovies(query).pipe(catchError(() => of({ results: [] } as any))),
+                    tvShows: this.apiCall.searchTvShows(query).pipe(catchError(() => of({ results: [] } as any))),
                     people: this.apiCall.SearchPersons(query).pipe(catchError(() => of({ results: [] } as any))),
                 }).pipe(
-                    map(({ movies, people }) => [
+                    map(({ movies, tvShows, people }) => [
                         ...(movies.results ?? [])
                             .filter((movie: Movie) => !movie.adult)
                             .slice(0, 5)
                             .map((movie: Movie): SearchSuggestion => ({ type: 'movie', movie })),
+                        ...(tvShows.results ?? [])
+                            .filter((show: TvShow) => !show.genre_ids?.some(id => EXCLUDED_TV_GENRE_IDS.has(id)))
+                            .slice(0, 5)
+                            .map((show: TvShow): SearchSuggestion => ({ type: 'tv', show })),
                         ...(people.results ?? [])
                             .filter((person: PersonSearchResult) => person.known_for_department === 'Acting')
                             .slice(0, 5)
@@ -96,8 +103,7 @@ export class SearchBarComponent implements OnInit, OnChanges, OnDestroy {
         ).subscribe(suggestions => {
             this.suggestions = suggestions;
             this.suggestionsLoading = false;
-            this.suggestionsOpen = this.mediaType === 'movie'
-                && this.searchText.trim().length >= 2
+            this.suggestionsOpen = this.searchText.trim().length >= 2
                 && suggestions.length > 0;
             this.activeSuggestionIndex = -1;
         });
@@ -146,7 +152,7 @@ export class SearchBarComponent implements OnInit, OnChanges, OnDestroy {
     onSearchTextChange(value: string): void {
         this.searchText = value;
         this.activeSuggestionIndex = -1;
-        if (this.mediaType !== 'movie' || value.trim().length < 2) {
+        if (value.trim().length < 2) {
             this.closeSuggestions();
             return;
         }
@@ -156,7 +162,7 @@ export class SearchBarComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     onInputFocus(): void {
-        if (this.mediaType === 'movie' && this.searchText.trim().length >= 2 && this.suggestions.length) {
+        if (this.searchText.trim().length >= 2 && this.suggestions.length) {
             this.suggestionsOpen = true;
         }
     }
@@ -196,19 +202,25 @@ export class SearchBarComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     chooseSuggestion(suggestion: SearchSuggestion, inputElement?: HTMLInputElement): void {
-        this.searchText = suggestion.type === 'movie' ? suggestion.movie.title : suggestion.person.name;
+        this.searchText = suggestion.type === 'movie'
+            ? suggestion.movie.title
+            : suggestion.type === 'tv' ? suggestion.show.name : suggestion.person.name;
         this.closeSuggestions();
         if (suggestion.type === 'movie') this.selectMovie.emit(suggestion.movie);
+        else if (suggestion.type === 'tv') this.selectTvShow.emit(suggestion.show);
         else this.selectPerson.emit(suggestion.person);
         inputElement?.blur();
     }
 
     suggestionTitle(suggestion: SearchSuggestion): string {
-        return suggestion.type === 'movie' ? suggestion.movie.title : suggestion.person.name;
+        return suggestion.type === 'movie'
+            ? suggestion.movie.title
+            : suggestion.type === 'tv' ? suggestion.show.name : suggestion.person.name;
     }
 
     suggestionSubtitle(suggestion: SearchSuggestion): string {
         if (suggestion.type === 'movie') return suggestion.movie.release_date?.slice(0, 4) || 'Film';
+        if (suggestion.type === 'tv') return suggestion.show.first_air_date?.slice(0, 4) || 'Série';
         const knownFor = suggestion.person.known_for
             ?.map(item => item.title || item.name)
             .filter(Boolean)
@@ -221,6 +233,11 @@ export class SearchBarComponent implements OnInit, OnChanges, OnDestroy {
         if (suggestion.type === 'movie') {
             return suggestion.movie.poster_path
                 ? `https://image.tmdb.org/t/p/w92${suggestion.movie.poster_path}`
+                : '/assets/placeholder-poster.png';
+        }
+        if (suggestion.type === 'tv') {
+            return suggestion.show.poster_path
+                ? `https://image.tmdb.org/t/p/w92${suggestion.show.poster_path}`
                 : '/assets/placeholder-poster.png';
         }
         return suggestion.person.profile_path

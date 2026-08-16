@@ -24,7 +24,7 @@
             enterkeyhint="search"
             autocomplete="off"
           />
-          <div *ngIf="mediaType === 'movie' && suggestionsOpen" id="search-suggestions" class="suggestions" role="listbox">
+          <div *ngIf="suggestionsOpen" id="search-suggestions" class="suggestions" role="listbox">
             <p *ngIf="suggestionsLoading && !suggestions.length" class="suggestions-status">Recherche…</p>
             <button
               *ngFor="let suggestion of suggestions; let index = index"
@@ -40,7 +40,7 @@
               <img [src]="suggestionImage(suggestion)" [alt]="suggestionTitle(suggestion)">
               <span class="suggestion-copy">
                 <strong>{{ suggestionTitle(suggestion) }}</strong>
-                <small>{{ suggestion.type === 'movie' ? 'Film' : 'Acteur' }} · {{ suggestionSubtitle(suggestion) }}</small>
+                <small>{{ suggestion.type === 'movie' ? 'Film' : suggestion.type === 'tv' ? 'Série' : 'Acteur' }} · {{ suggestionSubtitle(suggestion) }}</small>
               </span>
             </button>
           </div>
