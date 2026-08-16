@@ -63,6 +63,7 @@
     [movie]="selectedMovie"
     (close)="closeMovie()"
     (selectActor)="openActor($event)"
+    (selectMovie)="onSelect($event)"
   ></app-movie-detail-overlay>
 
   <app-person-detail-overlay

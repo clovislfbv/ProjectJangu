@@ -117,5 +117,29 @@
                 <p class="no-cast">NA</p>
             </ng-template>
         </div>
+
+        <section *ngIf="recommendations.length > 0" class="recommendations-section" aria-label="Films similaires">
+            <h2 class="overview-label">{{ getRecommendationsLabel() }}</h2>
+            <div class="recommendations-list">
+                <button
+                    *ngFor="let recommendation of recommendations"
+                    class="recommendation-item"
+                    type="button"
+                    (click)="selectMovie.emit(recommendation)"
+                >
+                    <img
+                        class="recommendation-poster"
+                        [src]="'https://image.tmdb.org/t/p/w342' + recommendation.poster_path"
+                        [alt]="recommendation.title"
+                        loading="lazy"
+                    />
+                    <span class="recommendation-title">{{ recommendation.title }}</span>
+                    <span class="recommendation-meta">
+                        {{ getReleaseYear(recommendation.release_date) }}
+                        <ng-container *ngIf="recommendation.vote_average > 0"> · ⭐ {{ recommendation.vote_average | number: '1.1-1' }}</ng-container>
+                    </span>
+                </button>
+            </div>
+        </section>
     </div>
 </div>

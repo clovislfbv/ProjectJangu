@@ -240,6 +240,72 @@
     color: #aaa;
 }
 
+.recommendations-section {
+    margin-top: 2rem;
+}
+
+.recommendations-list {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.25rem 0 0.75rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+}
+
+.recommendation-item {
+    flex: 0 0 140px;
+    padding: 0;
+    overflow: hidden;
+    color: inherit;
+    text-align: left;
+    background: #292929;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.recommendation-item:hover,
+.recommendation-item:focus-visible {
+    background: #333;
+    border-color: #ffd54f;
+    outline: none;
+    transform: translateY(-3px);
+}
+
+.recommendation-poster {
+    display: block;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+}
+
+.recommendation-title,
+.recommendation-meta {
+    display: block;
+    padding-right: 0.65rem;
+    padding-left: 0.65rem;
+}
+
+.recommendation-title {
+    margin-top: 0.65rem;
+    overflow: hidden;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recommendation-meta {
+    padding-top: 0.3rem;
+    padding-bottom: 0.65rem;
+    color: #bbb;
+    font-size: 0.75rem;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .overlay-content {
@@ -408,6 +474,10 @@
     
     .actor-character {
         font-size: 0.65rem;
+    }
+
+    .recommendation-item {
+        flex-basis: 120px;
     }
     
     /* Video container responsive sizing for phones */

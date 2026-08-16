@@ -685,6 +685,14 @@ export class ApiCallService {
         );
     }
 
+    getMovieRecommendations(movieId: number, page: number = 1): Observable<DiscoverMovieResponse> {
+        return this.getWithLanguageFallback<DiscoverMovieResponse>(
+            (language) => `${this.tmdbBaseUrl}/movie/${movieId}/recommendations?language=${language}&page=${page}`,
+            (response) => Array.isArray(response?.results) && response.results.length > 0,
+            this.getLanguageFallbacks(),
+        );
+    }
+
     getUpcomingMovies(page: number = 1): Observable<DiscoverMovieResponse> {
         const region = this.getUserRegion();
         const regionParam = region ? `&region=${encodeURIComponent(region)}` : '';

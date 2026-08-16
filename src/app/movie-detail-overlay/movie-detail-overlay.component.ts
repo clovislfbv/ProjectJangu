@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ApiCallService, CastMember, MovieDetailsResponse, StreamingLink } from '../api-call.service';
+import { ApiCallService, CastMember, Movie, MovieDetailsResponse, StreamingLink } from '../api-call.service';
 import { Genre } from '../api-call.service';
 import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { ShareButtonComponent } from '../share-button/share-button.component';
@@ -17,6 +17,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     @Input() movie!: any;
     @Output() close = new EventEmitter<void>();
     @Output() selectActor = new EventEmitter<CastMember>();
+    @Output() selectMovie = new EventEmitter<Movie>();
     genres: Genre[] = [];
 
     cast: CastMember[] = [];
@@ -25,6 +26,8 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     runtimeMinutes: number | null = null;
     streamingLinks: StreamingLink[] = [];
     streamingLinksLoaded = false;
+    recommendations: Movie[] = [];
+    recommendationsLoaded = false;
     hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
 
     displayedOverview: string | null = null;
@@ -41,6 +44,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
             this.loadVideos(this.movie.id);
             this.loadRuntime(this.movie.id);
             this.loadStreamingLinks(this.movie.id);
+            this.loadRecommendations(this.movie.id);
             this.preventBodyScrollOnIOS();
         } else if (!this.movie) {
             this.restoreBodyScrollOnIOS();
@@ -49,6 +53,8 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
             this.trailerUrl = null;
             this.streamingLinks = [];
             this.streamingLinksLoaded = false;
+            this.recommendations = [];
+            this.recommendationsLoaded = false;
 
             this.displayedOverview = null;
             this.overviewResolved = false;
@@ -172,6 +178,47 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
             this.streamingLinks = links || [];
             this.streamingLinksLoaded = true;
         });
+    }
+
+    private loadRecommendations(movieId: number) {
+        this.recommendations = [];
+        this.recommendationsLoaded = false;
+        this.apiCall.getMovieRecommendations(movieId).subscribe({
+            next: (response) => {
+                if (this.movie?.id !== movieId) return;
+
+                const seenIds = new Set<number>([movieId]);
+                this.recommendations = (response.results ?? [])
+                    .filter(movie => {
+                        if (movie.adult || !movie.poster_path || seenIds.has(movie.id)) return false;
+                        seenIds.add(movie.id);
+                        return true;
+                    })
+                    .slice(0, 12);
+                this.recommendationsLoaded = true;
+            },
+            error: () => {
+                if (this.movie?.id !== movieId) return;
+                this.recommendations = [];
+                this.recommendationsLoaded = true;
+            },
+        });
+    }
+
+    getRecommendationsLabel(): string {
+        const lang = (typeof navigator !== 'undefined' && navigator.language)
+            ? navigator.language.split('-')[0].toLowerCase()
+            : 'en';
+        const labels: Record<string, string> = {
+            fr: 'Films similaires', en: 'Similar movies', es: 'Películas similares',
+            de: 'Ähnliche Filme', it: 'Film simili', pt: 'Filmes semelhantes',
+            nl: 'Vergelijkbare films',
+        };
+        return labels[lang] ?? labels['en'];
+    }
+
+    getReleaseYear(releaseDate: string | null | undefined): string {
+        return releaseDate?.slice(0, 4) || 'NA';
     }
 
     getNoStreamingFoundMessage(): string {
