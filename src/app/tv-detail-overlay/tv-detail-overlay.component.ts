@@ -5,6 +5,8 @@ import { ApiCallService, CastMember, EXCLUDED_TV_GENRE_IDS, TvSeasonSummary, TvS
 import { TvSeasonDetailOverlayComponent } from '../tv-season-detail-overlay/tv-season-detail-overlay.component';
 import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { ShareButtonComponent } from '../share-button/share-button.component';
+import { MovixUrlService } from '../movix-url';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-tv-detail-overlay',
@@ -31,8 +33,12 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
     isLoading = true;
     selectedSeason: TvSeasonSummary | null = null;
     hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
+    movixBaseUrl: string;
+    private movixUrlSubscription?: Subscription;
 
-    constructor(private api: ApiCallService, private sanitizer: DomSanitizer) {}
+    constructor(private api: ApiCallService, private sanitizer: DomSanitizer, private movixUrl: MovixUrlService) {
+        this.movixBaseUrl = this.movixUrl.baseUrl;
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['seasonNumber'] && !changes['show']) {
@@ -63,6 +69,10 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
             this.providerLink = result.link;
         });
         this.loadRecommendations(this.show.id);
+    }
+
+    ngOnInit(): void {
+        this.movixUrlSubscription = this.movixUrl.baseUrl$.subscribe(url => this.movixBaseUrl = url);
     }
 
     private loadRecommendations(tvId: number): void {
@@ -99,7 +109,10 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
         this.selectedSeason = this.details.seasons.find(season => season.season_number === this.seasonNumber) ?? null;
     }
 
-    ngOnDestroy(): void { document.body.classList.remove('no-scroll'); }
+    ngOnDestroy(): void {
+        this.movixUrlSubscription?.unsubscribe();
+        document.body.classList.remove('no-scroll');
+    }
     closeOverlay(): void { document.body.classList.remove('no-scroll'); this.close.emit(); }
     openActor(actor: CastMember): void {
         document.body.classList.remove('no-scroll');

@@ -3,6 +3,7 @@ import { MovieListComponent } from './movie-list/movie-list.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
 import { ENHANCED_EXPERIENCE_STORAGE_KEY, hasEnhancedExperienceEnabled } from './user-preferences';
 import { FeedbackComponent } from './feedback/feedback.component';
+import { MovixUrlService } from './movix-url';
 
 @Component({
     selector: 'app-root',
@@ -18,7 +19,9 @@ export class AppComponent {
     areHiddenLinksUnlocked = hasEnhancedExperienceEnabled();
     activeView: 'catalog' | 'feedback' = 'catalog';
 
-    constructor(private elementRef: ElementRef<HTMLElement>) {}
+    constructor(private elementRef: ElementRef<HTMLElement>, movixUrl: MovixUrlService) {
+        movixUrl.checkOfficialUrl();
+    }
 
     toggleMenu(): void {
         this.isMenuOpen = !this.isMenuOpen;

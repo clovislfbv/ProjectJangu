@@ -64,13 +64,13 @@
                     <a
                         *ngIf="hiddenLinksUnlocked"
                         class="provider-pill"
-                        [href]="'https://movix.men/movie/' + movie.id"
+                        [href]="movixBaseUrl + '/movie/' + movie.id"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         <img
                             class="provider-logo"
-                            src="https://movix.men/movix.png"
+                            [src]="movixBaseUrl + '/movix.png'"
                             alt="Movix"
                         />
                         <span>Movix</span>

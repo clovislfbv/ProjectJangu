@@ -5,6 +5,8 @@ import { ApiCallService, CastMember, Movie, MovieDetailsResponse, StreamingLink 
 import { Genre } from '../api-call.service';
 import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { ShareButtonComponent } from '../share-button/share-button.component';
+import { MovixUrlService } from '../movix-url';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-movie-detail-overlay',
@@ -29,11 +31,15 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     recommendations: Movie[] = [];
     recommendationsLoaded = false;
     hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
+    movixBaseUrl: string;
+    private movixUrlSubscription?: Subscription;
 
     displayedOverview: string | null = null;
     overviewResolved = false;
 
-    constructor(private apiCall: ApiCallService, private sanitizer: DomSanitizer) {}
+    constructor(private apiCall: ApiCallService, private sanitizer: DomSanitizer, private movixUrl: MovixUrlService) {
+        this.movixBaseUrl = this.movixUrl.baseUrl;
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['movie'] && this.movie?.id) {
@@ -78,12 +84,14 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     }
 
     ngOnInit() {
+        this.movixUrlSubscription = this.movixUrl.baseUrl$.subscribe(url => this.movixBaseUrl = url);
         this.apiCall.getMovieGenres().subscribe((response) => {
             this.genres = response.genres;
         });
     }
 
     ngOnDestroy(): void {
+        this.movixUrlSubscription?.unsubscribe();
         // Browser back/forward navigation removes the overlay through *ngIf
         // without calling closeOverlay(), so always restore page scrolling.
         this.restoreBodyScrollOnIOS();
