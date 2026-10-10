@@ -3,9 +3,9 @@ import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleCha
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiCallService, CastMember, EXCLUDED_TV_GENRE_IDS, TvSeasonSummary, TvShow, TvShowDetails, WatchProvider } from '../api-call.service';
 import { TvSeasonDetailOverlayComponent } from '../tv-season-detail-overlay/tv-season-detail-overlay.component';
-import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { ShareButtonComponent } from '../share-button/share-button.component';
 import { MovixUrlService } from '../movix-url';
+import { WebflixUrlService } from '../webflix-url';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -32,12 +32,19 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
     recommendationsLoaded = false;
     isLoading = true;
     selectedSeason: TvSeasonSummary | null = null;
-    hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
     movixBaseUrl: string;
+    webflixBaseUrl: string;
     private movixUrlSubscription?: Subscription;
+    private webflixUrlSubscription?: Subscription;
 
-    constructor(private api: ApiCallService, private sanitizer: DomSanitizer, private movixUrl: MovixUrlService) {
+    constructor(
+        private api: ApiCallService,
+        private sanitizer: DomSanitizer,
+        private movixUrl: MovixUrlService,
+        private webflixUrl: WebflixUrlService,
+    ) {
         this.movixBaseUrl = this.movixUrl.baseUrl;
+        this.webflixBaseUrl = this.webflixUrl.baseUrl;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -73,6 +80,7 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
 
     ngOnInit(): void {
         this.movixUrlSubscription = this.movixUrl.baseUrl$.subscribe(url => this.movixBaseUrl = url);
+        this.webflixUrlSubscription = this.webflixUrl.baseUrl$.subscribe(url => this.webflixBaseUrl = url);
     }
 
     private loadRecommendations(tvId: number): void {
@@ -111,6 +119,7 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
 
     ngOnDestroy(): void {
         this.movixUrlSubscription?.unsubscribe();
+        this.webflixUrlSubscription?.unsubscribe();
         document.body.classList.remove('no-scroll');
     }
     closeOverlay(): void { document.body.classList.remove('no-scroll'); this.close.emit(); }

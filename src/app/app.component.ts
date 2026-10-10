@@ -4,6 +4,7 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
 import { ENHANCED_EXPERIENCE_STORAGE_KEY, hasEnhancedExperienceEnabled } from './user-preferences';
 import { FeedbackComponent } from './feedback/feedback.component';
 import { MovixUrlService } from './movix-url';
+import { WebflixUrlService } from './webflix-url';
 
 @Component({
     selector: 'app-root',
@@ -19,8 +20,13 @@ export class AppComponent {
     areHiddenLinksUnlocked = hasEnhancedExperienceEnabled();
     activeView: 'catalog' | 'feedback' = 'catalog';
 
-    constructor(private elementRef: ElementRef<HTMLElement>, movixUrl: MovixUrlService) {
+    constructor(
+        private elementRef: ElementRef<HTMLElement>,
+        movixUrl: MovixUrlService,
+        webflixUrl: WebflixUrlService,
+    ) {
         movixUrl.checkOfficialUrl();
+        webflixUrl.checkOfficialUrl();
     }
 
     toggleMenu(): void {

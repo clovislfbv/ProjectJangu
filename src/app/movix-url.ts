@@ -20,8 +20,10 @@ export class MovixUrlService {
     }
 
     checkOfficialUrl(): void {
-        this.http.get<{ url: string }>(URL_CHECK_ENDPOINT).pipe(
-            map(response => response.url),
+        this.http.get<{ url: string } | string>(URL_CHECK_ENDPOINT).pipe(
+            map(response => typeof response === 'string'
+                ? this.extractMovixUrl(response)
+                : response.url),
             map(url => new URL(url).origin),
             map(url => url === 'http://localhost' || url === 'https://localhost'
                 ? DEFAULT_URL
@@ -32,6 +34,12 @@ export class MovixUrlService {
             this.urlSubject.next(url);
             this.persistUrl(url);
         });
+    }
+
+    private extractMovixUrl(html: string): string {
+        const match = html.match(/(?:https?:\/\/)?(?:www\.)?(movix\.[a-z]{2,})(?=[:/\s?#]|$)/i);
+        if (!match) throw new Error('Movix domain not found');
+        return `https://${match[1].toLowerCase()}`;
     }
 
     private persistUrl(url: string): void {

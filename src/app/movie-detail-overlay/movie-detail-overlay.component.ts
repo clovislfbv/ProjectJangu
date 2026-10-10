@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiCallService, CastMember, Movie, MovieDetailsResponse, StreamingLink } from '../api-call.service';
 import { Genre } from '../api-call.service';
-import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { ShareButtonComponent } from '../share-button/share-button.component';
 import { MovixUrlService } from '../movix-url';
+import { WebflixUrlService } from '../webflix-url';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -30,15 +30,22 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     streamingLinksLoaded = false;
     recommendations: Movie[] = [];
     recommendationsLoaded = false;
-    hiddenLinksUnlocked = hasEnhancedExperienceEnabled();
     movixBaseUrl: string;
+    webflixBaseUrl: string;
     private movixUrlSubscription?: Subscription;
+    private webflixUrlSubscription?: Subscription;
 
     displayedOverview: string | null = null;
     overviewResolved = false;
 
-    constructor(private apiCall: ApiCallService, private sanitizer: DomSanitizer, private movixUrl: MovixUrlService) {
+    constructor(
+        private apiCall: ApiCallService,
+        private sanitizer: DomSanitizer,
+        private movixUrl: MovixUrlService,
+        private webflixUrl: WebflixUrlService,
+    ) {
         this.movixBaseUrl = this.movixUrl.baseUrl;
+        this.webflixBaseUrl = this.webflixUrl.baseUrl;
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -85,6 +92,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
 
     ngOnInit() {
         this.movixUrlSubscription = this.movixUrl.baseUrl$.subscribe(url => this.movixBaseUrl = url);
+        this.webflixUrlSubscription = this.webflixUrl.baseUrl$.subscribe(url => this.webflixBaseUrl = url);
         this.apiCall.getMovieGenres().subscribe((response) => {
             this.genres = response.genres;
         });
@@ -92,6 +100,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
 
     ngOnDestroy(): void {
         this.movixUrlSubscription?.unsubscribe();
+        this.webflixUrlSubscription?.unsubscribe();
         // Browser back/forward navigation removes the overlay through *ngIf
         // without calling closeOverlay(), so always restore page scrolling.
         this.restoreBodyScrollOnIOS();

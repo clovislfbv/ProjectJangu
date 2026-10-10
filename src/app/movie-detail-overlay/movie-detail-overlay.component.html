@@ -45,7 +45,7 @@
                 </ng-template>
 
                 <h2 class="overview-label">Streaming</h2>
-                <div *ngIf="streamingLinksLoaded && (streamingLinks.length > 0 || hiddenLinksUnlocked); else noProviders" class="providers">
+                <div *ngIf="streamingLinksLoaded; else noProviders" class="providers">
                     <a
                         *ngFor="let item of streamingLinks"
                         class="provider-pill"
@@ -62,7 +62,6 @@
                         <span>{{ item.name }}</span>
                     </a>
                     <a
-                        *ngIf="hiddenLinksUnlocked"
                         class="provider-pill"
                         [href]="movixBaseUrl + '/movie/' + movie.id"
                         target="_blank"
@@ -74,6 +73,19 @@
                             alt="Movix"
                         />
                         <span>Movix</span>
+                    </a>
+                    <a
+                        class="provider-pill"
+                        [href]="webflixBaseUrl + '/tmdb/movie/' + movie.id"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <img
+                            class="provider-logo"
+                            [src]="webflixBaseUrl + '/favicon.ico'"
+                            alt="Webflix"
+                        />
+                        <span>Webflix</span>
                     </a>
                 </div>
                 <ng-template #noProviders>
