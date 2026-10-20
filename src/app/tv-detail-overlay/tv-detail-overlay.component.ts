@@ -32,7 +32,7 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
     recommendationsLoaded = false;
     isLoading = true;
     selectedSeason: TvSeasonSummary | null = null;
-    movixBaseUrl: string;
+    movixBaseUrl: string | null;
     webflixBaseUrl: string;
     private movixUrlSubscription?: Subscription;
     private webflixUrlSubscription?: Subscription;

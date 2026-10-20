@@ -30,7 +30,7 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     streamingLinksLoaded = false;
     recommendations: Movie[] = [];
     recommendationsLoaded = false;
-    movixBaseUrl: string;
+    movixBaseUrl: string | null;
     webflixBaseUrl: string;
     private movixUrlSubscription?: Subscription;
     private webflixUrlSubscription?: Subscription;

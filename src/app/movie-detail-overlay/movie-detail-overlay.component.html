@@ -62,6 +62,7 @@
                         <span>{{ item.name }}</span>
                     </a>
                     <a
+                        *ngIf="movixBaseUrl"
                         class="provider-pill"
                         [href]="movixBaseUrl + '/movie/' + movie.id"
                         target="_blank"

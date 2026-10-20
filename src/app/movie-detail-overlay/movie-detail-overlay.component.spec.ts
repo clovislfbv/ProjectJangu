@@ -2,12 +2,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { ApiCallService, Movie } from '../api-call.service';
+import { MovixUrlService } from '../movix-url';
 import { MovieDetailOverlayComponent } from './movie-detail-overlay.component';
 
 describe('MovieDetailOverlayComponent', () => {
     let component: MovieDetailOverlayComponent;
     let fixture: ComponentFixture<MovieDetailOverlayComponent>;
     let apiCall: jasmine.SpyObj<ApiCallService>;
+    let movixUrl: jasmine.SpyObj<MovixUrlService>;
 
     const movie = (id: number, overrides: Partial<Movie> = {}): Movie => ({
         adult: false, backdrop_path: '', genre_ids: [], id, original_language: 'en',
@@ -32,10 +34,17 @@ describe('MovieDetailOverlayComponent', () => {
             results: [movie(1), movie(2), movie(2), movie(3, { adult: true }),
                 movie(4, { poster_path: '' }), movie(5)],
         }));
+        movixUrl = jasmine.createSpyObj<MovixUrlService>('MovixUrlService', [], {
+            baseUrl: 'https://movix.example',
+            baseUrl$: of('https://movix.example'),
+        });
 
         await TestBed.configureTestingModule({
             imports: [MovieDetailOverlayComponent],
-            providers: [{ provide: ApiCallService, useValue: apiCall }],
+            providers: [
+                { provide: ApiCallService, useValue: apiCall },
+                { provide: MovixUrlService, useValue: movixUrl },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MovieDetailOverlayComponent);
@@ -58,5 +67,11 @@ describe('MovieDetailOverlayComponent', () => {
         button.click();
 
         expect(selected.map(({ id }) => id)).toEqual([2]);
+    });
+
+    it('builds the Movix link from the resolved base URL', () => {
+        const link: HTMLAnchorElement = fixture.nativeElement.querySelector('.provider-pill:nth-of-type(1)');
+
+        expect(link.href).toBe('https://movix.example/movie/1');
     });
 });

@@ -32,6 +32,17 @@ function getWebflixDomain(html) {
   return `https://${domain}`;
 }
 
+function getMovixDomain(html) {
+  const links = html.match(/<a\b[^>]*href\s*=\s*(['"])(.*?)\1[^>]*>/gis) ?? [];
+  for (const link of links) {
+    const match = link.match(/href\s*=\s*(['"])(https?:\/\/(?:www\.)?(movix\.[a-z]{2,}))(?=[/:?#'"])/i);
+    if (match) return new URL(match[2]).origin;
+  }
+
+  const match = html.match(/(?:https?:\/\/)?(?:www\.)?(movix\.[a-z]{2,})(?=[:/\s?#]|$)/i);
+  return match ? `https://${match[1].toLowerCase()}` : null;
+}
+
 async function proxyApi(request, env, route) {
   const secret = env[route.secret];
   if (!secret) return apiResponse(`Missing Cloudflare secret: ${route.secret}`, 500);
@@ -80,20 +91,21 @@ async function checkWebflixOfficialUrl() {
   } catch {
     return apiResponse('Unable to check Webflix domain', 502);
   }
+}
 
-  async function checkMovixOfficialUrl() {
-    try {
-      const response = await fetch('https://movix.online/', {
-        headers: SITE_URL_CHECK_HEADERS,
-      });
-      const html = await response.text();
-      const match = html.match(/(?:https?:\/\/)?(?:www\.)?(movix\.[a-z]{2,})(?=[:/\s?#]|$)/i);
-      return Response.json({ url: match ? `https://${match[1].toLowerCase()}` : 'https://movix.men' }, {
-        headers: { 'Cache-Control': 'no-store' },
-      });
-    } catch {
-      return apiResponse('Unable to check Movix URL', 502);
-    }
+async function checkMovixOfficialUrl() {
+  try {
+    const response = await fetch('https://movix.online/', {
+      headers: SITE_URL_CHECK_HEADERS,
+    });
+    const html = await response.text();
+    const url = getMovixDomain(html);
+    if (!url) return apiResponse('Movix domain not found', 502);
+    return Response.json({ url }, {
+      headers: { 'Cache-Control': 'no-store' },
+    });
+  } catch {
+    return apiResponse('Unable to check Movix URL', 502);
   }
 }
 

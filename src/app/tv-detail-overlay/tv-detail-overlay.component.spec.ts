@@ -2,12 +2,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { ApiCallService, TvShow, TvShowDetails } from '../api-call.service';
+import { MovixUrlService } from '../movix-url';
 import { TvDetailOverlayComponent } from './tv-detail-overlay.component';
 
 describe('TvDetailOverlayComponent', () => {
     let component: TvDetailOverlayComponent;
     let fixture: ComponentFixture<TvDetailOverlayComponent>;
     let api: jasmine.SpyObj<ApiCallService>;
+    let movixUrl: jasmine.SpyObj<MovixUrlService>;
 
     const show = (id: number, overrides: Partial<TvShow> = {}): TvShow => ({
         id, name: `Show ${id}`, original_name: `Show ${id}`, overview: '',
@@ -34,10 +36,17 @@ describe('TvDetailOverlayComponent', () => {
             results: [show(1), show(2), show(2), show(3, { genre_ids: [10764] }),
                 show(4, { poster_path: null }), show(5)],
         }));
+        movixUrl = jasmine.createSpyObj<MovixUrlService>('MovixUrlService', [], {
+            baseUrl: 'https://movix.example',
+            baseUrl$: of('https://movix.example'),
+        });
 
         await TestBed.configureTestingModule({
             imports: [TvDetailOverlayComponent],
-            providers: [{ provide: ApiCallService, useValue: api }],
+            providers: [
+                { provide: ApiCallService, useValue: api },
+                { provide: MovixUrlService, useValue: movixUrl },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(TvDetailOverlayComponent);
@@ -60,5 +69,11 @@ describe('TvDetailOverlayComponent', () => {
         button.click();
 
         expect(selected.map(({ id }) => id)).toEqual([2]);
+    });
+
+    it('builds the Movix link from the resolved base URL', () => {
+        const link: HTMLAnchorElement = fixture.nativeElement.querySelector('.provider:nth-of-type(1)');
+
+        expect(link.href).toBe('https://movix.example/tv/1');
     });
 });
