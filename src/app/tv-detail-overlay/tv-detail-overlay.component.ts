@@ -6,6 +6,7 @@ import { TvSeasonDetailOverlayComponent } from '../tv-season-detail-overlay/tv-s
 import { ShareButtonComponent } from '../share-button/share-button.component';
 import { MovixUrlService } from '../movix-url';
 import { WebflixUrlService } from '../webflix-url';
+import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -36,6 +37,10 @@ export class TvDetailOverlayComponent implements OnChanges, OnDestroy {
     webflixBaseUrl: string;
     private movixUrlSubscription?: Subscription;
     private webflixUrlSubscription?: Subscription;
+
+    get areHiddenLinksUnlocked(): boolean {
+        return hasEnhancedExperienceEnabled();
+    }
 
     constructor(
         private api: ApiCallService,

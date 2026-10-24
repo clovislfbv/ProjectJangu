@@ -69,7 +69,21 @@ describe('MovieDetailOverlayComponent', () => {
         expect(selected.map(({ id }) => id)).toEqual([2]);
     });
 
-    it('builds the Movix link from the resolved base URL', () => {
+    afterEach(() => localStorage.removeItem('projectJanguHiddenLinksUnlocked'));
+
+    it('hides the Movix and Webflix links until the feedback code is sent', () => {
+        localStorage.removeItem('projectJanguHiddenLinksUnlocked');
+        fixture.detectChanges();
+
+        const text = fixture.nativeElement.textContent as string;
+        expect(text).not.toContain('Movix');
+        expect(text).not.toContain('Webflix');
+    });
+
+    it('builds the Movix link from the resolved base URL once unlocked', () => {
+        localStorage.setItem('projectJanguHiddenLinksUnlocked', 'true');
+        fixture.detectChanges();
+
         const link: HTMLAnchorElement = fixture.nativeElement.querySelector('.provider-pill:nth-of-type(1)');
 
         expect(link.href).toBe('https://movix.example/movie/1');

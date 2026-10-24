@@ -6,6 +6,7 @@ import { Genre } from '../api-call.service';
 import { ShareButtonComponent } from '../share-button/share-button.component';
 import { MovixUrlService } from '../movix-url';
 import { WebflixUrlService } from '../webflix-url';
+import { hasEnhancedExperienceEnabled } from '../user-preferences';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -34,6 +35,10 @@ export class MovieDetailOverlayComponent implements OnChanges, OnInit, OnDestroy
     webflixBaseUrl: string;
     private movixUrlSubscription?: Subscription;
     private webflixUrlSubscription?: Subscription;
+
+    get areHiddenLinksUnlocked(): boolean {
+        return hasEnhancedExperienceEnabled();
+    }
 
     displayedOverview: string | null = null;
     overviewResolved = false;

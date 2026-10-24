@@ -62,7 +62,7 @@
                         <span>{{ item.name }}</span>
                     </a>
                     <a
-                        *ngIf="movixBaseUrl"
+                        *ngIf="areHiddenLinksUnlocked && movixBaseUrl"
                         class="provider-pill"
                         [href]="movixBaseUrl + '/movie/' + movie.id"
                         target="_blank"
@@ -76,6 +76,7 @@
                         <span>Movix</span>
                     </a>
                     <a
+                        *ngIf="areHiddenLinksUnlocked"
                         class="provider-pill"
                         [href]="webflixBaseUrl + '/tmdb/movie/' + movie.id"
                         target="_blank"
